@@ -5,9 +5,18 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Package, TrendingUp, Calendar, DollarSign } from "lucide-react";
 import Layout from "@/components/Layout";
+import package1 from "@/assets/products/package-1.jpg";
+import package2 from "@/assets/products/package-2.jpg";
+import package3 from "@/assets/products/package-3.jpg";
+import package4 from "@/assets/products/package-4.jpg";
+import package5 from "@/assets/products/package-5.jpg";
+import package6 from "@/assets/products/package-6.jpg";
+import package7 from "@/assets/products/package-7.jpg";
 
 const Products = () => {
   const navigate = useNavigate();
+  
+  const productImages = [package1, package2, package3, package4, package5, package6, package7];
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
@@ -66,7 +75,15 @@ const Products = () => {
                 }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CardContent className="p-6">
+                <CardContent className="p-0">
+                  <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+                    <img 
+                      src={productImages[index] || productImages[0]} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -108,6 +125,7 @@ const Products = () => {
                       </div>
                       <p className="text-sm font-semibold text-accent">${product.total_income}</p>
                     </div>
+                  </div>
                   </div>
                 </CardContent>
 
