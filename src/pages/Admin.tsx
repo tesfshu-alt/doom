@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import AdminBankInfo from "./admin/AdminBankInfo";
 import AdminProducts from "./admin/AdminProducts";
 import AdminWithdrawals from "./admin/AdminWithdrawals";
+import AdminDailyIncome from "./admin/AdminDailyIncome";
 
 const Admin = () => {
   const { user } = useAuth();
@@ -155,9 +156,10 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="recharges" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="recharges">Recharges</TabsTrigger>
             <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
+            <TabsTrigger value="income">Daily Income</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="bank">Bank Info</TabsTrigger>
@@ -222,6 +224,10 @@ const Admin = () => {
 
           <TabsContent value="withdrawals" className="space-y-4">
             <AdminWithdrawals />
+          </TabsContent>
+
+          <TabsContent value="income" className="space-y-4">
+            <AdminDailyIncome />
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
