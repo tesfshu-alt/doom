@@ -11,6 +11,7 @@ import Products from "./pages/Products";
 import Team from "./pages/Team";
 import Mine from "./pages/Mine";
 import Recharge from "./pages/Recharge";
+import Withdrawal from "./pages/Withdrawal";
 import Admin from "./pages/Admin";
 import BankAccounts from "./pages/mine/BankAccounts";
 import Records from "./pages/mine/Records";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
             <Route path="/mine" element={<ProtectedRoute><Mine /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
+            <Route path="/withdrawal" element={<ProtectedRoute><Withdrawal /></ProtectedRoute>} />
             <Route path="/mine/bank-accounts" element={<ProtectedRoute><BankAccounts /></ProtectedRoute>} />
             <Route path="/mine/records" element={<ProtectedRoute><Records /></ProtectedRoute>} />
             <Route path="/mine/about" element={<ProtectedRoute><About /></ProtectedRoute>} />

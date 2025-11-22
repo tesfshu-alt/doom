@@ -112,37 +112,40 @@ const Records = () => {
             <h2 className="text-lg font-semibold">Transactions</h2>
             {transactions && transactions.length > 0 ? (
               <div className="space-y-2">
-                {transactions.map((transaction) => (
-                  <Card key={transaction.id} className="shadow-card">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          <div className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            transaction.amount >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'
+                {transactions.map((transaction) => {
+                  const isWithdrawal = transaction.type === 'withdrawal';
+                  return (
+                    <Card key={transaction.id} className="shadow-card">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              isWithdrawal ? 'bg-red-500/10' : 'bg-green-500/10'
+                            }`}>
+                              {isWithdrawal ? (
+                                <TrendingDown className="h-5 w-5 text-red-600" />
+                              ) : (
+                                <TrendingUp className="h-5 w-5 text-green-600" />
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              <p className="font-semibold">{transaction.description}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {format(new Date(transaction.created_at), 'MMM dd, yyyy HH:mm')}
+                              </p>
+                              <Badge variant="outline">{transaction.type}</Badge>
+                            </div>
+                          </div>
+                          <p className={`text-lg font-bold ${
+                            isWithdrawal ? 'text-red-600' : 'text-green-600'
                           }`}>
-                            {transaction.amount >= 0 ? (
-                              <TrendingUp className="h-5 w-5 text-green-600" />
-                            ) : (
-                              <TrendingDown className="h-5 w-5 text-red-600" />
-                            )}
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-semibold">{transaction.description}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(transaction.created_at), 'MMM dd, yyyy HH:mm')}
-                            </p>
-                            <Badge variant="outline">{transaction.type}</Badge>
-                          </div>
+                            {isWithdrawal ? '-' : '+'}${Math.abs(Number(transaction.amount)).toFixed(2)}
+                          </p>
                         </div>
-                        <p className={`text-lg font-bold ${
-                          transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {transaction.amount >= 0 ? '+' : ''}${transaction.amount}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             ) : (
               <Card className="shadow-card">

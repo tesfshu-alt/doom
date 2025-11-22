@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import AdminBankInfo from "./admin/AdminBankInfo";
 import AdminProducts from "./admin/AdminProducts";
+import AdminWithdrawals from "./admin/AdminWithdrawals";
 
 const Admin = () => {
   const { user } = useAuth();
@@ -154,8 +155,9 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="recharges" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="recharges">Recharges</TabsTrigger>
+            <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="bank">Bank Info</TabsTrigger>
@@ -216,6 +218,10 @@ const Admin = () => {
                 </Card>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="withdrawals" className="space-y-4">
+            <AdminWithdrawals />
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">

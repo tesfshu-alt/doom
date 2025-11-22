@@ -1,0 +1,180 @@
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Check, X, Settings } from "lucide-react";
+import { format } from "date-fns";
+
+const AdminWithdrawals = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: pendingWithdrawals } = useQuery({
+    queryKey: ['pendingWithdrawals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('*, bank_accounts(*)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Fetch profiles separately
+      const userIds = data?.map(w => w.user_id) || [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, phone_number')
+        .in('id', userIds);
+      
+      return data?.map(withdrawal => ({
+        ...withdrawal,
+        profile: profiles?.find(p => p.id === withdrawal.user_id)
+      }));
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: async (withdrawalId: string) => {
+      const withdrawal = pendingWithdrawals?.find(w => w.id === withdrawalId);
+      if (!withdrawal) throw new Error('Withdrawal not found');
+
+      // Update withdrawal status
+      const { error: withdrawalError } = await supabase
+        .from('withdrawals')
+        .update({ 
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id,
+        })
+        .eq('id', withdrawalId);
+
+      if (withdrawalError) throw withdrawalError;
+
+      // Create transaction record
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: withdrawal.user_id,
+          amount: withdrawal.amount,
+          type: 'withdrawal',
+          description: `Withdrawal to ${withdrawal.bank_accounts?.bank_name} - ${withdrawal.bank_accounts?.account_number}`,
+        });
+
+      if (transactionError) throw transactionError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingWithdrawals'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
+      toast({ title: "Success", description: "Withdrawal approved successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async (withdrawalId: string) => {
+      const { error } = await supabase
+        .from('withdrawals')
+        .update({ 
+          status: 'rejected',
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id,
+        })
+        .eq('id', withdrawalId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingWithdrawals'] });
+      toast({ title: "Success", description: "Withdrawal rejected" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Pending Withdrawal Requests</h2>
+      {pendingWithdrawals && pendingWithdrawals.length > 0 ? (
+        pendingWithdrawals.map((withdrawal) => (
+          <Card key={withdrawal.id} className="shadow-card">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-lg">
+                      {withdrawal.profile?.phone_number || 'Unknown User'}
+                    </p>
+                    <Badge>Pending</Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                      Bank: {withdrawal.bank_accounts?.bank_name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Account: {withdrawal.bank_accounts?.account_number}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Name: {withdrawal.bank_accounts?.account_name}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Amount: </span>
+                      <span className="font-bold text-primary">${withdrawal.amount}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Date: </span>
+                      <span>{format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button 
+                    size="sm" 
+                    onClick={() => approveMutation.mutate(withdrawal.id)}
+                    disabled={approveMutation.isPending || rejectMutation.isPending}
+                  >
+                    <Check className="h-4 w-4 mr-1" /> Approve
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => rejectMutation.mutate(withdrawal.id)}
+                    disabled={approveMutation.isPending || rejectMutation.isPending}
+                  >
+                    <X className="h-4 w-4 mr-1" /> Reject
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      ) : (
+        <Card className="shadow-card">
+          <CardContent className="p-8 text-center">
+            <Settings className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+            <p className="text-muted-foreground">No pending withdrawal requests</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default AdminWithdrawals;

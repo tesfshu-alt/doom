@@ -282,6 +282,50 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          bank_account_id: string
+          created_at: string
+          id: string
+          rejection_reason: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_id: string
+          created_at?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_id?: string
+          created_at?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -303,6 +347,7 @@ export type Database = {
         | "purchase"
         | "referral_bonus"
         | "daily_income"
+        | "withdrawal"
       user_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -437,6 +482,7 @@ export const Constants = {
         "purchase",
         "referral_bonus",
         "daily_income",
+        "withdrawal",
       ],
       user_role: ["admin", "user"],
     },
