@@ -1,1 +1,4 @@
 project_id = "gqnxtcudzizwcgkivbzn"
+
+[functions.daily-income-distributor]
+verify_jwt = false
