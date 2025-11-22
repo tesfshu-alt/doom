@@ -13,6 +13,7 @@ import {
   CreditCard,
   ChevronRight,
   Shield,
+  Wallet,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 
@@ -41,6 +42,13 @@ const Mine = () => {
       description: "Manage your bank details",
       path: "/mine/bank-accounts",
       color: "text-primary",
+    },
+    {
+      icon: Wallet,
+      label: "Withdrawal",
+      description: "Request payout",
+      path: "/withdrawal",
+      color: "text-accent",
     },
     {
       icon: History,
