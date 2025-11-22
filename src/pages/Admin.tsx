@@ -78,18 +78,34 @@ const Admin = () => {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + recharge.products.validity_days);
 
-      await supabase.from('recharges').update({ 
+      // Update recharge status
+      const { error: rechargeError } = await supabase.from('recharges').update({ 
         status: 'approved',
         approved_at: new Date().toISOString(),
         approved_by: user?.id,
       }).eq('id', rechargeId);
 
-      await supabase.from('user_products').insert({
+      if (rechargeError) throw rechargeError;
+
+      // Create user product
+      const { error: productError } = await supabase.from('user_products').insert({
         user_id: recharge.user_id,
         product_id: recharge.product_id,
         recharge_id: rechargeId,
         expiry_date: expiryDate.toISOString(),
       });
+
+      if (productError) throw productError;
+
+      // Create transaction record
+      const { error: transactionError } = await supabase.from('transactions').insert({
+        user_id: recharge.user_id,
+        amount: recharge.amount,
+        type: 'purchase',
+        description: `Purchased ${recharge.products.name}`,
+      });
+
+      if (transactionError) throw transactionError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingRecharges'] });
