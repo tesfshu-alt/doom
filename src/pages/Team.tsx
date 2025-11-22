@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Users, UserPlus, Calendar, Gift } from "lucide-react";
 import Layout from "@/components/Layout";
 import { format } from "date-fns";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Team = () => {
   const { user } = useAuth();
@@ -89,15 +88,6 @@ const Team = () => {
           <h1 className="text-2xl font-bold">My Team</h1>
           <p className="text-muted-foreground">Build your network and earn rewards</p>
         </div>
-
-        {referralSettings?.enabled && (
-          <Alert className="bg-gradient-to-r from-accent/10 to-primary/10 border-accent/20">
-            <Gift className="h-4 w-4" />
-            <AlertDescription>
-              <span className="font-semibold">Referral Bonus Active!</span> Earn {referralSettings.bonus_amount}% of your referred users' first investment.
-            </AlertDescription>
-          </Alert>
-        )}
 
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 space-y-4">
