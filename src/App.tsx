@@ -3,7 +3,20 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Team from "./pages/Team";
+import Mine from "./pages/Mine";
+import Recharge from "./pages/Recharge";
+import Admin from "./pages/Admin";
+import BankAccounts from "./pages/mine/BankAccounts";
+import Records from "./pages/mine/Records";
+import About from "./pages/mine/About";
+import Rules from "./pages/mine/Rules";
+import Support from "./pages/mine/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -14,11 +27,23 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+            <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
+            <Route path="/mine" element={<ProtectedRoute><Mine /></ProtectedRoute>} />
+            <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
+            <Route path="/mine/bank-accounts" element={<ProtectedRoute><BankAccounts /></ProtectedRoute>} />
+            <Route path="/mine/records" element={<ProtectedRoute><Records /></ProtectedRoute>} />
+            <Route path="/mine/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+            <Route path="/mine/rules" element={<ProtectedRoute><Rules /></ProtectedRoute>} />
+            <Route path="/mine/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
