@@ -13,6 +13,7 @@ import AdminBankInfo from "./admin/AdminBankInfo";
 import AdminProducts from "./admin/AdminProducts";
 import AdminWithdrawals from "./admin/AdminWithdrawals";
 import AdminDailyIncome from "./admin/AdminDailyIncome";
+import AdminReferralSettings from "./admin/AdminReferralSettings";
 
 const Admin = () => {
   const { user } = useAuth();
@@ -108,6 +109,48 @@ const Admin = () => {
       });
 
       if (transactionError) throw transactionError;
+
+      // Check if this is the user's first purchase
+      const { data: previousPurchases } = await supabase
+        .from('user_products')
+        .select('id')
+        .eq('user_id', recharge.user_id);
+
+      const isFirstPurchase = previousPurchases && previousPurchases.length === 1;
+
+      // If first purchase, check for referral and award bonus
+      if (isFirstPurchase) {
+        // Get user's referral info
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('referred_by')
+          .eq('id', recharge.user_id)
+          .single();
+
+        if (profile?.referred_by) {
+          // Get referral settings
+          const { data: referralSettings } = await supabase
+            .from('referral_settings')
+            .select('*')
+            .single();
+
+          if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
+            // Credit referral bonus to the referrer
+            const { error: bonusError } = await supabase
+              .from('transactions')
+              .insert({
+                user_id: profile.referred_by,
+                amount: referralSettings.bonus_amount,
+                type: 'referral_bonus',
+                description: `Referral bonus for inviting new user`,
+              });
+
+            if (bonusError) {
+              console.error('Error crediting referral bonus:', bonusError);
+            }
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingRecharges'] });
@@ -156,10 +199,11 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="recharges" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="recharges">Recharges</TabsTrigger>
             <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
             <TabsTrigger value="income">Daily Income</TabsTrigger>
+            <TabsTrigger value="referral">Referral</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="bank">Bank Info</TabsTrigger>
@@ -228,6 +272,10 @@ const Admin = () => {
 
           <TabsContent value="income" className="space-y-4">
             <AdminDailyIncome />
+          </TabsContent>
+
+          <TabsContent value="referral" className="space-y-4">
+            <AdminReferralSettings />
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
