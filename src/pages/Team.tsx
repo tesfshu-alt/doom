@@ -94,7 +94,7 @@ const Team = () => {
           <Alert className="bg-gradient-to-r from-accent/10 to-primary/10 border-accent/20">
             <Gift className="h-4 w-4" />
             <AlertDescription>
-              <span className="font-semibold">Referral Bonus Active!</span> Earn ${referralSettings.bonus_amount} when your referred users make their first investment.
+              <span className="font-semibold">Referral Bonus Active!</span> Earn {referralSettings.bonus_amount}% of your referred users' first investment.
             </AlertDescription>
           </Alert>
         )}

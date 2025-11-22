@@ -135,14 +135,17 @@ const Admin = () => {
             .single();
 
           if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
+            // Calculate 35% of the purchase amount as referral bonus
+            const bonusAmount = (recharge.amount * referralSettings.bonus_amount) / 100;
+            
             // Credit referral bonus to the referrer
             const { error: bonusError } = await supabase
               .from('transactions')
               .insert({
                 user_id: profile.referred_by,
-                amount: referralSettings.bonus_amount,
+                amount: bonusAmount,
                 type: 'referral_bonus',
-                description: `Referral bonus for inviting new user`,
+                description: `Referral bonus (${referralSettings.bonus_amount}%) for inviting new user`,
               });
 
             if (bonusError) {
