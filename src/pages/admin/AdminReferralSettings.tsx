@@ -101,7 +101,7 @@ const AdminReferralSettings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bonusAmount">Bonus Amount ($)</Label>
+                <Label htmlFor="bonusAmount">Bonus Amount (ETB)</Label>
                 <Input
                   id="bonusAmount"
                   type="number"

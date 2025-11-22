@@ -135,7 +135,7 @@ const Recharge = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Amount:</span>
-              <span className="font-bold text-primary text-xl">${product.price}</span>
+              <span className="font-bold text-primary text-xl">ETB {product.price}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Validity:</span>
@@ -143,7 +143,7 @@ const Recharge = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Daily Income:</span>
-              <span className="font-semibold text-secondary">${product.daily_income}</span>
+              <span className="font-semibold text-secondary">ETB {product.daily_income}</span>
             </div>
           </CardContent>
         </Card>

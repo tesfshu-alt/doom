@@ -20,7 +20,7 @@ const Rules = () => {
     {
       title: "Investment Rules",
       rules: [
-        "Minimum investment starts from $100",
+        "Minimum investment starts from ETB 100",
         "Each product has a fixed validity period",
         "Daily income is calculated based on the product package",
         "Products must be activated by admin before generating income",
