@@ -26,7 +26,7 @@ const AdminReferralSettings = () => {
     },
   });
 
-  const [bonusAmount, setBonusAmount] = useState(settings?.bonus_amount?.toString() || '10.00');
+  const [bonusAmount, setBonusAmount] = useState(settings?.bonus_amount?.toString() || '35');
   const [enabled, setEnabled] = useState(settings?.enabled ?? true);
 
   const updateMutation = useMutation({
@@ -65,7 +65,7 @@ const AdminReferralSettings = () => {
   };
 
   // Update local state when settings are loaded
-  if (settings && bonusAmount === '10.00' && settings.bonus_amount !== 10) {
+  if (settings && bonusAmount === '35' && settings.bonus_amount !== 35) {
     setBonusAmount(settings.bonus_amount.toString());
     setEnabled(settings.enabled);
   }
@@ -101,19 +101,20 @@ const AdminReferralSettings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bonusAmount">Bonus Amount (ETB)</Label>
+                <Label htmlFor="bonusAmount">Bonus Percentage (%)</Label>
                 <Input
                   id="bonusAmount"
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
+                  max="100"
                   value={bonusAmount}
                   onChange={(e) => setBonusAmount(e.target.value)}
                   required
                   disabled={!enabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Amount credited to the referrer when their referred user makes their first purchase
+                  Percentage of the first purchase amount credited to the referrer
                 </p>
               </div>
             </div>
@@ -136,8 +137,8 @@ const AdminReferralSettings = () => {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>1. When a new user registers with a referral code, the system tracks the referrer.</p>
-          <p>2. When the referred user makes their first investment (recharge is approved), the referrer receives the bonus.</p>
-          <p>3. The bonus is automatically credited as a transaction to the referrer's account.</p>
+          <p>2. When the referred user makes their first investment (recharge is approved), the referrer receives a percentage of that investment as bonus.</p>
+          <p>3. The bonus is automatically calculated and credited as a transaction to the referrer's account.</p>
           <p>4. Each user can only earn the referral bonus once per referred user.</p>
         </CardContent>
       </Card>
