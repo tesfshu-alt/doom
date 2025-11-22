@@ -71,6 +71,39 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_service_contacts: {
+        Row: {
+          contact_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          link: string
+          title: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          contact_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          link: string
+          title: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          contact_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          link?: string
+          title?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
