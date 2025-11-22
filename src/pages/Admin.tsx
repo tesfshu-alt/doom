@@ -14,6 +14,7 @@ import AdminProducts from "./admin/AdminProducts";
 import AdminWithdrawals from "./admin/AdminWithdrawals";
 import AdminDailyIncome from "./admin/AdminDailyIncome";
 import AdminReferralSettings from "./admin/AdminReferralSettings";
+import AdminCustomerService from "./admin/AdminCustomerService";
 
 const Admin = () => {
   const { user } = useAuth();
@@ -202,7 +203,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="recharges" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="recharges">Recharges</TabsTrigger>
             <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
             <TabsTrigger value="income">Daily Income</TabsTrigger>
@@ -210,6 +211,7 @@ const Admin = () => {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="bank">Bank Info</TabsTrigger>
+            <TabsTrigger value="support">Support</TabsTrigger>
           </TabsList>
 
           <TabsContent value="recharges" className="space-y-4">
@@ -315,6 +317,10 @@ const Admin = () => {
 
           <TabsContent value="bank">
             <AdminBankInfo />
+          </TabsContent>
+
+          <TabsContent value="support">
+            <AdminCustomerService />
           </TabsContent>
         </Tabs>
       </div>

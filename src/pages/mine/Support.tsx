@@ -1,42 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Mail, Phone } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import Layout from "@/components/Layout";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Support = () => {
   const navigate = useNavigate();
 
-  const contacts = [
-    {
-      icon: MessageCircle,
-      title: "Telegram",
-      value: "@platform_support",
-      link: "https://t.me/platform_support",
-      color: "text-blue-600",
+  const { data: contacts, isLoading } = useQuery({
+    queryKey: ["customer-service-contacts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customer_service_contacts")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data;
     },
-    {
-      icon: MessageCircle,
-      title: "WhatsApp",
-      value: "+1234567890",
-      link: "https://wa.me/1234567890",
-      color: "text-green-600",
-    },
-    {
-      icon: Mail,
-      title: "Email",
-      value: "support@platform.com",
-      link: "mailto:support@platform.com",
-      color: "text-primary",
-    },
-    {
-      icon: Phone,
-      title: "Phone",
-      value: "+1 (234) 567-890",
-      link: "tel:+1234567890",
-      color: "text-secondary",
-    },
-  ];
+  });
 
   return (
     <Layout>
@@ -62,11 +47,12 @@ const Support = () => {
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Contact Us</h2>
-          <div className="space-y-2">
-            {contacts.map((contact, index) => {
-              const Icon = contact.icon;
-              return (
-                <Card key={index} className="shadow-card">
+          {isLoading ? (
+            <p className="text-muted-foreground">Loading...</p>
+          ) : contacts && contacts.length > 0 ? (
+            <div className="space-y-2">
+              {contacts.map((contact) => (
+                <Card key={contact.id} className="shadow-card">
                   <CardContent className="p-4">
                     <a
                       href={contact.link}
@@ -75,8 +61,8 @@ const Support = () => {
                       rel="noopener noreferrer"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`h-10 w-10 rounded-full bg-muted flex items-center justify-center ${contact.color}`}>
-                          <Icon className="h-5 w-5" />
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-blue-600">
+                          <MessageCircle className="h-5 w-5" />
                         </div>
                         <div>
                           <p className="font-semibold">{contact.title}</p>
@@ -87,9 +73,11 @@ const Support = () => {
                     </a>
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No contact methods available</p>
+          )}
         </div>
 
         <Card className="shadow-card">
