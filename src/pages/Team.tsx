@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Users, UserPlus, Calendar } from "lucide-react";
+import { Copy, Users, UserPlus, Calendar, Gift } from "lucide-react";
 import Layout from "@/components/Layout";
 import { format } from "date-fns";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Team = () => {
   const { user } = useAuth();
@@ -42,6 +43,35 @@ const Team = () => {
     enabled: !!user,
   });
 
+  const { data: referralSettings } = useQuery({
+    queryKey: ['referralSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('referral_settings')
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: referralEarnings } = useQuery({
+    queryKey: ['referralEarnings', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('user_id', user?.id)
+        .eq('type', 'referral_bonus');
+      
+      if (error) throw error;
+      const total = data.reduce((sum, t) => sum + Number(t.amount), 0);
+      return { total, count: data.length };
+    },
+    enabled: !!user,
+  });
+
   const referralLink = profile ? `${window.location.origin}/auth?ref=${profile.referral_code}` : '';
 
   const copyReferralLink = () => {
@@ -59,6 +89,15 @@ const Team = () => {
           <h1 className="text-2xl font-bold">My Team</h1>
           <p className="text-muted-foreground">Build your network and earn rewards</p>
         </div>
+
+        {referralSettings?.enabled && (
+          <Alert className="bg-gradient-to-r from-accent/10 to-primary/10 border-accent/20">
+            <Gift className="h-4 w-4" />
+            <AlertDescription>
+              <span className="font-semibold">Referral Bonus Active!</span> Earn ${referralSettings.bonus_amount} when your referred users make their first investment.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 space-y-4">
@@ -106,10 +145,10 @@ const Team = () => {
           <Card className="shadow-card">
             <CardContent className="p-4 space-y-1">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <UserPlus className="h-4 w-4" />
-                <span className="text-sm">Active Members</span>
+                <Gift className="h-4 w-4" />
+                <span className="text-sm">Bonus Earned</span>
               </div>
-              <p className="text-2xl font-bold text-secondary">{referrals?.length || 0}</p>
+              <p className="text-2xl font-bold text-accent">${referralEarnings?.total.toFixed(2) || '0.00'}</p>
             </CardContent>
           </Card>
         </div>
