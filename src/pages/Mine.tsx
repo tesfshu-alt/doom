@@ -1,4 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -10,12 +12,27 @@ import {
   Headphones,
   CreditCard,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 
 const Mine = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ['isAdmin', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .eq('role', 'admin')
+        .single();
+      return !!data;
+    },
+    enabled: !!user,
+  });
 
   const menuItems = [
     {
@@ -62,6 +79,26 @@ const Mine = () => {
           <h1 className="text-2xl font-bold">My Account</h1>
           <p className="text-muted-foreground">Manage your profile and settings</p>
         </div>
+
+        {isAdmin && (
+          <Card className="shadow-elevated bg-gradient-primary animate-fade-in">
+            <CardContent className="p-4">
+              <button
+                onClick={() => navigate('/admin')}
+                className="w-full flex items-center justify-between text-white"
+              >
+                <div className="flex items-center gap-3">
+                  <Shield className="h-6 w-6" />
+                  <div className="text-left">
+                    <p className="font-semibold text-lg">Admin Panel</p>
+                    <p className="text-sm text-white/80">Manage platform settings</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="space-y-2">
           {menuItems.map((item, index) => {
