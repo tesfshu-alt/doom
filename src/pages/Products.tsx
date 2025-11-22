@@ -98,7 +98,7 @@ const Products = () => {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">${product.price}</p>
+                      <p className="text-2xl font-bold text-primary">ETB {product.price}</p>
                     </div>
                   </div>
 
@@ -116,7 +116,7 @@ const Products = () => {
                         <TrendingUp className="h-3 w-3" />
                         <span className="text-xs">Daily</span>
                       </div>
-                      <p className="text-sm font-semibold text-secondary">${product.daily_income}</p>
+                      <p className="text-sm font-semibold text-secondary">ETB {product.daily_income}</p>
                     </div>
 
                     <div className="space-y-1">
@@ -124,7 +124,7 @@ const Products = () => {
                         <DollarSign className="h-3 w-3" />
                         <span className="text-xs">Total</span>
                       </div>
-                      <p className="text-sm font-semibold text-accent">${product.total_income}</p>
+                      <p className="text-sm font-semibold text-accent">ETB {product.total_income}</p>
                     </div>
                   </div>
                   </div>

@@ -131,7 +131,7 @@ const Dashboard = () => {
                 <Wallet className="h-4 w-4" />
                 <span className="text-sm">Total Investment</span>
               </div>
-              <p className="text-2xl font-bold text-primary">${totalInvestment.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">ETB {totalInvestment.toFixed(2)}</p>
             </CardContent>
           </Card>
 
@@ -141,7 +141,7 @@ const Dashboard = () => {
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm">Daily Income</span>
               </div>
-              <p className="text-2xl font-bold text-secondary">${totalDailyIncome.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-secondary">ETB {totalDailyIncome.toFixed(2)}</p>
             </CardContent>
           </Card>
         </div>
@@ -183,11 +183,11 @@ const Dashboard = () => {
                       <div>
                         <h3 className="font-semibold">{product.products.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          ${product.products.daily_income}/day
+                          ETB {product.products.daily_income}/day
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium">${product.products.price}</p>
+                        <p className="text-sm font-medium">ETB {product.products.price}</p>
                         <p className="text-xs text-muted-foreground">
                           {product.products.validity_days} days
                         </p>

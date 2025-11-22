@@ -234,7 +234,7 @@ const AdminProducts = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (ETB)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -257,7 +257,7 @@ const AdminProducts = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dailyIncome">Daily Income ($)</Label>
+                  <Label htmlFor="dailyIncome">Daily Income (ETB)</Label>
                   <Input
                     id="dailyIncome"
                     type="number"
@@ -268,7 +268,7 @@ const AdminProducts = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="totalIncome">Total Income ($)</Label>
+                  <Label htmlFor="totalIncome">Total Income (ETB)</Label>
                   <Input
                     id="totalIncome"
                     type="number"
@@ -330,7 +330,7 @@ const AdminProducts = () => {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-muted-foreground">Price: </span>
-                      <span className="font-semibold">${product.price}</span>
+                      <span className="font-semibold">ETB {product.price}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Validity: </span>
@@ -338,11 +338,11 @@ const AdminProducts = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Daily: </span>
-                      <span className="font-semibold">${product.daily_income}</span>
+                      <span className="font-semibold">ETB {product.daily_income}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Total: </span>
-                      <span className="font-semibold">${product.total_income}</span>
+                      <span className="font-semibold">ETB {product.total_income}</span>
                     </div>
                   </div>
                   </div>

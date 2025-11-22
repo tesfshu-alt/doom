@@ -130,7 +130,7 @@ const Withdrawal = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-primary">${availableBalance.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-primary">ETB {availableBalance.toFixed(2)}</p>
           </CardContent>
         </Card>
 
@@ -185,7 +185,7 @@ const Withdrawal = () => {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Maximum: ${availableBalance.toFixed(2)}
+                    Maximum: ETB {availableBalance.toFixed(2)}
                   </p>
                 </div>
 

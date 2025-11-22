@@ -148,7 +148,7 @@ const Team = () => {
                 <Gift className="h-4 w-4" />
                 <span className="text-sm">Bonus Earned</span>
               </div>
-              <p className="text-2xl font-bold text-accent">${referralEarnings?.total.toFixed(2) || '0.00'}</p>
+              <p className="text-2xl font-bold text-accent">ETB {referralEarnings?.total.toFixed(2) || '0.00'}</p>
             </CardContent>
           </Card>
         </div>

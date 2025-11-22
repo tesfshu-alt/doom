@@ -139,7 +139,7 @@ const Records = () => {
                           <p className={`text-lg font-bold ${
                             isWithdrawal ? 'text-red-600' : 'text-green-600'
                           }`}>
-                            {isWithdrawal ? '-' : '+'}${Math.abs(Number(transaction.amount)).toFixed(2)}
+                            {isWithdrawal ? '-' : '+'}ETB {Math.abs(Number(transaction.amount)).toFixed(2)}
                           </p>
                         </div>
                       </CardContent>

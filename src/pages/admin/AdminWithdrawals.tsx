@@ -136,7 +136,7 @@ const AdminWithdrawals = () => {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-muted-foreground">Amount: </span>
-                      <span className="font-bold text-primary">${withdrawal.amount}</span>
+                      <span className="font-bold text-primary">ETB {withdrawal.amount}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Date: </span>
