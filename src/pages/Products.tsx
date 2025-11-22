@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Package, TrendingUp, Calendar, DollarSign } from "lucide-react";
+import { Package, TrendingUp, Calendar, DollarSign, Calculator } from "lucide-react";
 import Layout from "@/components/Layout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import package1 from "@/assets/products/package-1.jpg";
 import package2 from "@/assets/products/package-2.jpg";
 import package3 from "@/assets/products/package-3.jpg";
@@ -15,6 +17,8 @@ import package7 from "@/assets/products/package-7.jpg";
 
 const Products = () => {
   const navigate = useNavigate();
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   
   const productImages = [package1, package2, package3, package4, package5, package6, package7];
 
@@ -34,6 +38,27 @@ const Products = () => {
 
   const handleBuyProduct = (productId: string) => {
     navigate(`/recharge?product=${productId}`);
+  };
+
+  const handleCalculate = (product: any) => {
+    setSelectedProduct(product);
+    setIsCalculatorOpen(true);
+  };
+
+  const calculateEarnings = (product: any) => {
+    const dailyIncome = Number(product.daily_income);
+    const validityDays = product.validity_days;
+    const totalIncome = dailyIncome * validityDays;
+    const profit = totalIncome - Number(product.price);
+    const roi = ((profit / Number(product.price)) * 100).toFixed(2);
+    
+    return {
+      dailyIncome,
+      validityDays,
+      totalIncome,
+      profit,
+      roi
+    };
   };
 
   if (isLoading) {
@@ -63,6 +88,20 @@ const Products = () => {
           <h1 className="text-2xl font-bold">Investment Products</h1>
           <p className="text-muted-foreground">Choose a package that suits your goals</p>
         </div>
+
+        <Card className="shadow-elevated bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Calculator className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold">Earnings Calculator</p>
+                <p className="text-xs text-muted-foreground">Calculate your potential returns</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="space-y-4">
           {products?.map((product, index) => {
@@ -130,10 +169,87 @@ const Products = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="p-4 pt-0">
+                <CardFooter className="p-4 pt-0 flex gap-2">
+                  <Dialog open={isCalculatorOpen && selectedProduct?.id === product.id} onOpenChange={setIsCalculatorOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        onClick={() => handleCalculate(product)}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Calculator className="h-4 w-4 mr-2" />
+                        Calculate
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Calculator className="h-5 w-5 text-primary" />
+                          Earnings Calculator
+                        </DialogTitle>
+                      </DialogHeader>
+                      {selectedProduct && (
+                        <div className="space-y-4">
+                          <Card className="bg-gradient-primary">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base text-white">{selectedProduct.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3 text-white">
+                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                                <span className="text-white/80">Investment Amount</span>
+                                <span className="font-bold text-lg">ETB {selectedProduct.price}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                                <span className="text-white/80">Daily Income</span>
+                                <span className="font-bold text-accent">ETB {calculateEarnings(selectedProduct).dailyIncome}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                                <span className="text-white/80">Contract Period</span>
+                                <span className="font-semibold">{calculateEarnings(selectedProduct).validityDays} days</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                                <span className="text-white/80">Total Earnings</span>
+                                <span className="font-bold text-lg text-secondary">ETB {calculateEarnings(selectedProduct).totalIncome}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                                <span className="text-white/80">Net Profit</span>
+                                <span className="font-bold text-lg text-green-300">ETB {calculateEarnings(selectedProduct).profit}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2">
+                                <span className="text-white/80">ROI</span>
+                                <span className="font-bold text-xl text-accent">{calculateEarnings(selectedProduct).roi}%</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                            <p className="text-xs text-muted-foreground">
+                              <strong>How it works:</strong>
+                            </p>
+                            <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                              <li>Daily income is credited automatically</li>
+                              <li>Contract runs for {selectedProduct.validity_days} days</li>
+                              <li>Total return includes your initial investment</li>
+                              <li>Withdraw anytime after approval</li>
+                            </ul>
+                          </div>
+
+                          <Button
+                            onClick={() => {
+                              setIsCalculatorOpen(false);
+                              handleBuyProduct(selectedProduct.id);
+                            }}
+                            className="w-full"
+                          >
+                            Invest Now
+                          </Button>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                   <Button
                     onClick={() => handleBuyProduct(product.id)}
-                    className="w-full"
+                    className="flex-1"
                     variant={isPremium ? "default" : "outline"}
                   >
                     Buy Now
