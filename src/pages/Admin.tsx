@@ -109,6 +109,8 @@ const Admin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingRecharges'] });
+      queryClient.invalidateQueries({ queryKey: ['activeProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast({ title: "Success", description: "Recharge approved successfully" });
     },
   });

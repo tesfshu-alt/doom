@@ -1,15 +1,17 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Package, Users, User, CreditCard, Wallet, TrendingUp } from "lucide-react";
 import Layout from "@/components/Layout";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: profile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -40,6 +42,45 @@ const Dashboard = () => {
     },
     enabled: !!user,
   });
+
+  // Set up real-time subscription for user_products
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('user-products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_products',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Refetch active products when changes occur
+          queryClient.invalidateQueries({ queryKey: ['activeProducts', user.id] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Refetch when transactions change
+          queryClient.invalidateQueries({ queryKey: ['activeProducts', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   const shortcuts = [
     {
