@@ -67,6 +67,7 @@ const Products = () => {
         <div className="space-y-4">
           {products?.map((product, index) => {
             const isPremium = index >= 4;
+            const imageUrl = product.image_url || productImages[index] || productImages[0];
             return (
               <Card
                 key={product.id}
@@ -78,7 +79,7 @@ const Products = () => {
                 <CardContent className="p-0">
                   <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
                     <img 
-                      src={productImages[index] || productImages[0]} 
+                      src={imageUrl} 
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />

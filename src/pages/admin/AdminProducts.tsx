@@ -7,14 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import package1 from "@/assets/products/package-1.jpg";
+import package2 from "@/assets/products/package-2.jpg";
+import package3 from "@/assets/products/package-3.jpg";
+import package4 from "@/assets/products/package-4.jpg";
+import package5 from "@/assets/products/package-5.jpg";
+import package6 from "@/assets/products/package-6.jpg";
+import package7 from "@/assets/products/package-7.jpg";
 
 const AdminProducts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  const productImages = [package1, package2, package3, package4, package5, package6, package7];
+  
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -38,6 +50,27 @@ const AdminProducts = () => {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      let imageUrl = null;
+
+      // Upload image if provided
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
       const productData = {
         name: formData.name,
         price: parseFloat(formData.price),
@@ -45,6 +78,7 @@ const AdminProducts = () => {
         daily_income: parseFloat(formData.dailyIncome),
         total_income: parseFloat(formData.totalIncome),
         sort_order: parseInt(formData.sortOrder),
+        ...(imageUrl && { image_url: imageUrl }),
       };
 
       if (editingId) {
@@ -62,8 +96,11 @@ const AdminProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsDialogOpen(false);
       setEditingId(null);
+      setImageFile(null);
+      setImagePreview(null);
       setFormData({ name: '', price: '', validityDays: '', dailyIncome: '', totalIncome: '', sortOrder: '' });
       toast({ title: "Success", description: editingId ? "Product updated" : "Product added" });
     },
@@ -107,13 +144,33 @@ const AdminProducts = () => {
       totalIncome: product.total_income.toString(),
       sortOrder: product.sort_order.toString(),
     });
+    setImagePreview(product.image_url);
     setIsDialogOpen(true);
   };
 
   const handleAdd = () => {
     setEditingId(null);
+    setImageFile(null);
+    setImagePreview(null);
     setFormData({ name: '', price: '', validityDays: '', dailyIncome: '', totalIncome: '', sortOrder: '0' });
     setIsDialogOpen(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   return (
@@ -132,6 +189,40 @@ const AdminProducts = () => {
               <DialogTitle>{editingId ? 'Edit' : 'Add'} Product</DialogTitle>
             </DialogHeader>
             <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="image">Product Image</Label>
+                <div className="flex flex-col gap-3">
+                  {imagePreview ? (
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={removeImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <Input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="flex-1"
+                      />
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
                 <Input
@@ -207,11 +298,21 @@ const AdminProducts = () => {
       </div>
 
       <div className="grid gap-3">
-        {products?.map((product) => (
+        {products?.map((product, index) => {
+          const imageUrl = product.image_url || productImages[index] || productImages[0];
+          return (
           <Card key={product.id}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2 flex-1">
+                <div className="flex gap-4 flex-1">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                    <img 
+                      src={imageUrl} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3">
                     <p className="font-semibold text-lg">{product.name}</p>
                     <div className="flex items-center gap-2">
@@ -244,6 +345,7 @@ const AdminProducts = () => {
                       <span className="font-semibold">${product.total_income}</span>
                     </div>
                   </div>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="icon" onClick={() => handleEdit(product)}>
@@ -260,7 +362,7 @@ const AdminProducts = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )})}
       </div>
     </div>
   );
