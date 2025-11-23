@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, ArrowLeft, CheckCircle } from "lucide-react";
+import { Copy, ArrowLeft, CheckCircle, Upload } from "lucide-react";
 import Layout from "@/components/Layout";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const Recharge = () => {
   const { user } = useAuth();
@@ -17,6 +19,7 @@ const Recharge = () => {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get('product');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [screenshot, setScreenshot] = useState<File | null>(null);
 
   const { data: product } = useQuery({
     queryKey: ['product', productId],
@@ -51,6 +54,23 @@ const Recharge = () => {
   const createRechargeMutation = useMutation({
     mutationFn: async () => {
       if (!product || !user) throw new Error('Missing data');
+      if (!screenshot) throw new Error('Please upload payment screenshot');
+
+      // Upload screenshot to storage
+      const fileExt = screenshot.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `payment-proofs/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, screenshot);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
 
       const { error } = await supabase
         .from('recharges')
@@ -59,6 +79,7 @@ const Recharge = () => {
           product_id: product.id,
           amount: product.price,
           status: 'pending',
+          payment_proof_url: publicUrl,
         });
 
       if (error) throw error;
@@ -209,7 +230,7 @@ const Recharge = () => {
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>After payment, click Submit below</p>
+                <p>Upload screenshot of payment confirmation</p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -219,9 +240,40 @@ const Recharge = () => {
           </CardContent>
         </Card>
 
+        <Card className="shadow-card">
+          <CardContent className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="screenshot" className="text-base font-semibold">
+                Payment Screenshot *
+              </Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="screenshot"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setScreenshot(e.target.files?.[0] || null)}
+                  className="flex-1"
+                  required
+                />
+                {screenshot && (
+                  <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                )}
+              </div>
+              {screenshot && (
+                <div className="mt-2 p-3 bg-secondary/10 rounded-lg">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    {screenshot.name}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !screenshot}
           className="w-full h-12 text-lg"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Payment Request'}
