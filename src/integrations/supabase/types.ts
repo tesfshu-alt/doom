@@ -182,9 +182,11 @@ export type Database = {
           approved_by: string | null
           created_at: string
           id: string
+          payer_account_name: string | null
           payment_proof_url: string | null
           product_id: string
           status: Database["public"]["Enums"]["recharge_status"]
+          transaction_id: string | null
           user_id: string
         }
         Insert: {
@@ -193,9 +195,11 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           id?: string
+          payer_account_name?: string | null
           payment_proof_url?: string | null
           product_id: string
           status?: Database["public"]["Enums"]["recharge_status"]
+          transaction_id?: string | null
           user_id: string
         }
         Update: {
@@ -204,9 +208,11 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           id?: string
+          payer_account_name?: string | null
           payment_proof_url?: string | null
           product_id?: string
           status?: Database["public"]["Enums"]["recharge_status"]
+          transaction_id?: string | null
           user_id?: string
         }
         Relationships: [

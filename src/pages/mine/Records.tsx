@@ -43,6 +43,21 @@ const Records = () => {
     enabled: !!user,
   });
 
+  const { data: withdrawals } = useQuery({
+    queryKey: ['withdrawals', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('*, bank_accounts(*)')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
@@ -103,6 +118,52 @@ const Records = () => {
                 <CardContent className="p-8 text-center">
                   <History className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                   <p className="text-muted-foreground">No recharge history</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold">Withdrawal History</h2>
+            {withdrawals && withdrawals.length > 0 ? (
+              <div className="space-y-2">
+                {withdrawals.map((withdrawal) => (
+                  <Card key={withdrawal.id} className="shadow-card">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                            <TrendingDown className="h-5 w-5 text-red-600" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="font-semibold">Withdrawal Request</p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Bank: {withdrawal.bank_accounts.bank_name} - {withdrawal.bank_accounts.account_number}
+                            </p>
+                            <Badge className={getStatusColor(withdrawal.status)}>
+                              {withdrawal.status}
+                            </Badge>
+                            {withdrawal.rejection_reason && (
+                              <p className="text-xs text-red-600 mt-1">
+                                Reason: {withdrawal.rejection_reason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-lg font-bold text-red-600">-ETB {withdrawal.amount}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="shadow-card">
+                <CardContent className="p-8 text-center">
+                  <History className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">No withdrawal history</p>
                 </CardContent>
               </Card>
             )}
