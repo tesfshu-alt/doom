@@ -50,6 +50,26 @@ const UserHistoryContent = ({ userId }: { userId: string }) => {
     },
   });
 
+  const { data: userBalance } = useQuery({
+    queryKey: ['userBalance', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('amount, type')
+        .eq('user_id', userId);
+      if (error) throw error;
+      
+      const balance = data?.reduce((acc, transaction) => {
+        if (transaction.type === 'withdrawal') {
+          return acc - transaction.amount;
+        }
+        return acc + transaction.amount;
+      }, 0) || 0;
+      
+      return balance;
+    },
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
@@ -65,6 +85,13 @@ const UserHistoryContent = ({ userId }: { userId: string }) => {
 
   return (
     <div className="space-y-6">
+      <div className="p-4 bg-muted rounded-lg">
+        <h3 className="text-lg font-semibold mb-2">Current Balance</h3>
+        <p className="text-2xl font-bold text-primary">
+          ETB {userBalance?.toFixed(2) || '0.00'}
+        </p>
+      </div>
+
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Recharge History</h3>
         {userRecharges && userRecharges.length > 0 ? (
@@ -314,8 +341,8 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Admin Panel</h1>
           <Button variant="outline" onClick={() => navigate('/')}>
@@ -324,26 +351,28 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="recharges" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="recharges">Recharges</TabsTrigger>
-            <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
-            <TabsTrigger value="income">Daily Income</TabsTrigger>
-            <TabsTrigger value="referral">Referral</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="bank">Bank Info</TabsTrigger>
-            <TabsTrigger value="support">Support</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="grid w-full grid-cols-8 min-w-[640px]">
+              <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
+              <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
+              <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
+              <TabsTrigger value="referral" className="text-xs sm:text-sm">Referral</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
+              <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
+              <TabsTrigger value="bank" className="text-xs sm:text-sm">Bank</TabsTrigger>
+              <TabsTrigger value="support" className="text-xs sm:text-sm">Support</TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="recharges" className="space-y-4">
+          <TabsContent value="recharges" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
             <div className="space-y-3">
-              <h2 className="text-xl font-bold">Pending Recharge Requests</h2>
+              <h2 className="text-lg sm:text-xl font-bold">Pending Recharge Requests</h2>
               {pendingRecharges && pendingRecharges.length > 0 ? (
                 pendingRecharges.map((recharge) => (
                   <Card key={recharge.id} className="shadow-card">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="space-y-2 flex-1">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                        <div className="space-y-2 flex-1 w-full">
                           <div className="flex items-center gap-2">
                             <p className="font-semibold text-lg">{recharge.profile?.phone_number || 'Unknown User'}</p>
                             <Badge>Pending</Badge>
@@ -372,9 +401,10 @@ const Admin = () => {
                             </div>
                           )}
                         </div>
-                        <div className="flex gap-2 flex-shrink-0">
+                        <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
                           <Button 
-                            size="sm" 
+                            size="sm"
+                            className="flex-1 sm:flex-initial"
                             onClick={() => approveMutation.mutate(recharge.id)}
                             disabled={approveMutation.isPending || rejectMutation.isPending}
                           >
@@ -383,6 +413,7 @@ const Admin = () => {
                           <Button 
                             size="sm" 
                             variant="destructive"
+                            className="flex-1 sm:flex-initial"
                             onClick={() => rejectMutation.mutate(recharge.id)}
                             disabled={approveMutation.isPending || rejectMutation.isPending}
                           >
@@ -404,21 +435,21 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="withdrawals" className="space-y-4">
+          <TabsContent value="withdrawals" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminWithdrawals />
           </TabsContent>
 
-          <TabsContent value="income" className="space-y-4">
+          <TabsContent value="income" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminDailyIncome />
           </TabsContent>
 
-          <TabsContent value="referral" className="space-y-4">
+          <TabsContent value="referral" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminReferralSettings />
           </TabsContent>
 
-          <TabsContent value="users" className="space-y-4">
+          <TabsContent value="users" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
             <div className="space-y-3">
-              <h2 className="text-xl font-bold">All Users</h2>
+              <h2 className="text-lg sm:text-xl font-bold">All Users</h2>
               {allUsers?.map((user) => (
                 <Card key={user.id} className="shadow-card">
                   <CardContent className="p-4">
@@ -458,15 +489,15 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="products">
+          <TabsContent value="products" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminProducts />
           </TabsContent>
 
-          <TabsContent value="bank">
+          <TabsContent value="bank" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminBankInfo />
           </TabsContent>
 
-          <TabsContent value="support">
+          <TabsContent value="support" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminCustomerService />
           </TabsContent>
         </Tabs>
