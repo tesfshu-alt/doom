@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Shield,
   Wallet,
+  Key,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 
@@ -42,6 +43,13 @@ const Mine = () => {
       description: "Manage your bank details",
       path: "/mine/bank-accounts",
       color: "text-primary",
+    },
+    {
+      icon: Key,
+      label: "Change Password",
+      description: "Update your password",
+      path: "/mine/change-password",
+      color: "text-accent",
     },
     {
       icon: Wallet,
