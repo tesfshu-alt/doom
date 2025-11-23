@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [loginPhone, setLoginPhone] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -20,6 +22,13 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,9 +54,19 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!referralCode || referralCode.trim() === "") {
+      toast({
+        variant: "destructive",
+        title: "Referral Code Required",
+        description: "You must provide a valid referral code to sign up.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    const { error } = await signUp(signupPhone, signupPassword, referralCode || undefined);
+    const { error } = await signUp(signupPhone, signupPassword, referralCode);
 
     if (error) {
       toast({
@@ -208,14 +227,18 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="referral">Referral Code (Optional)</Label>
+                  <Label htmlFor="referral">Referral Code <span className="text-destructive">*</span></Label>
                   <Input
                     id="referral"
                     type="text"
                     placeholder="Enter referral code"
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value)}
+                    required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Required: Ask your referrer for their code to sign up
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
