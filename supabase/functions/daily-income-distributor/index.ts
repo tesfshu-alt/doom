@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting daily income distribution...');
+    console.log('Starting hourly income distribution...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -72,18 +72,19 @@ serve(async (req) => {
           continue;
         }
 
-        // Credit daily income
+        // Credit hourly income (1/24th of daily income)
         const dailyIncome = userProduct.products.daily_income;
+        const hourlyIncome = dailyIncome / 24;
         
-        console.log(`Crediting ${dailyIncome} to user ${userProduct.user_id} for product ${userProduct.products.name}`);
+        console.log(`Crediting ${hourlyIncome} (hourly) to user ${userProduct.user_id} for product ${userProduct.products.name}`);
         
         const { error: transactionError } = await supabase
           .from('transactions')
           .insert({
             user_id: userProduct.user_id,
-            amount: dailyIncome,
+            amount: hourlyIncome,
             type: 'daily_income',
-            description: `Daily income from ${userProduct.products.name}`,
+            description: `Hourly income from ${userProduct.products.name}`,
           });
 
         if (transactionError) {
@@ -106,12 +107,12 @@ serve(async (req) => {
       errors: errorCount,
     };
 
-    console.log('Daily income distribution completed:', summary);
+    console.log('Hourly income distribution completed:', summary);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Daily income distribution completed',
+        message: 'Hourly income distribution completed',
         summary,
       }),
       {
@@ -120,7 +121,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in daily income distribution:', error);
+    console.error('Error in hourly income distribution:', error);
     return new Response(
       JSON.stringify({
         success: false,
