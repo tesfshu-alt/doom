@@ -18,6 +18,7 @@ import Records from "./pages/mine/Records";
 import About from "./pages/mine/About";
 import Rules from "./pages/mine/Rules";
 import Support from "./pages/mine/Support";
+import ChangePassword from "./pages/mine/ChangePassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/mine/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
             <Route path="/mine/rules" element={<ProtectedRoute><Rules /></ProtectedRoute>} />
             <Route path="/mine/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+            <Route path="/mine/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
