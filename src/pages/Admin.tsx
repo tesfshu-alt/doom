@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, X, Users, Settings, Image as ImageIcon } from "lucide-react";
+import { Check, X, Users, Settings, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,120 @@ import AdminWithdrawals from "./admin/AdminWithdrawals";
 import AdminDailyIncome from "./admin/AdminDailyIncome";
 import AdminReferralSettings from "./admin/AdminReferralSettings";
 import AdminCustomerService from "./admin/AdminCustomerService";
+
+const UserHistoryContent = ({ userId }: { userId: string }) => {
+  const { data: userRecharges } = useQuery({
+    queryKey: ['userRecharges', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('recharges')
+        .select('*, products(*)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: userWithdrawals } = useQuery({
+    queryKey: ['userWithdrawals', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('*, bank_accounts(*)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-500/10 text-green-700';
+      case 'pending':
+        return 'bg-yellow-500/10 text-yellow-700';
+      case 'rejected':
+        return 'bg-red-500/10 text-red-700';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Recharge History</h3>
+        {userRecharges && userRecharges.length > 0 ? (
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {userRecharges.map((recharge) => (
+              <Card key={recharge.id}>
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm">{recharge.products.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(recharge.created_at), 'MMM dd, yyyy HH:mm')}
+                      </p>
+                      {recharge.transaction_id && (
+                        <p className="text-xs font-mono">TXN: {recharge.transaction_id}</p>
+                      )}
+                      {recharge.payer_account_name && (
+                        <p className="text-xs">Payer: {recharge.payer_account_name}</p>
+                      )}
+                      <Badge className={getStatusColor(recharge.status)} variant="outline">
+                        {recharge.status}
+                      </Badge>
+                    </div>
+                    <p className="font-bold text-primary">ETB {recharge.amount}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No recharge history</p>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Withdrawal History</h3>
+        {userWithdrawals && userWithdrawals.length > 0 ? (
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {userWithdrawals.map((withdrawal) => (
+              <Card key={withdrawal.id}>
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm">Withdrawal Request</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}
+                      </p>
+                      <p className="text-xs">
+                        {withdrawal.bank_accounts.bank_name} - {withdrawal.bank_accounts.account_number}
+                      </p>
+                      <Badge className={getStatusColor(withdrawal.status)} variant="outline">
+                        {withdrawal.status}
+                      </Badge>
+                      {withdrawal.rejection_reason && (
+                        <p className="text-xs text-red-600">Reason: {withdrawal.rejection_reason}</p>
+                      )}
+                    </div>
+                    <p className="font-bold text-red-600">-ETB {withdrawal.amount}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No withdrawal history</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 const Admin = () => {
   const { user } = useAuth();
@@ -245,25 +359,17 @@ const Admin = () => {
                               <span>{format(new Date(recharge.created_at), 'MMM dd, yyyy HH:mm')}</span>
                             </div>
                           </div>
-                          {recharge.payment_proof_url && (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="mt-2">
-                                  <ImageIcon className="h-4 w-4 mr-2" />
-                                  View Payment Screenshot
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-3xl">
-                                <DialogHeader>
-                                  <DialogTitle>Payment Screenshot</DialogTitle>
-                                </DialogHeader>
-                                <img 
-                                  src={recharge.payment_proof_url} 
-                                  alt="Payment proof" 
-                                  className="w-full h-auto rounded-lg"
-                                />
-                              </DialogContent>
-                            </Dialog>
+                          {recharge.transaction_id && (
+                            <div className="mt-2 p-2 bg-muted rounded-md space-y-1">
+                              <div>
+                                <span className="text-xs text-muted-foreground">Transaction ID: </span>
+                                <span className="text-sm font-mono">{recharge.transaction_id}</span>
+                              </div>
+                              <div>
+                                <span className="text-xs text-muted-foreground">Payer Name: </span>
+                                <span className="text-sm">{recharge.payer_account_name}</span>
+                              </div>
+                            </div>
                           )}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
@@ -331,6 +437,20 @@ const Admin = () => {
                           </div>
                         </div>
                       </div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View History
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>User History - {user.phone_number}</DialogTitle>
+                          </DialogHeader>
+                          <UserHistoryContent userId={user.id} />
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </CardContent>
                 </Card>
