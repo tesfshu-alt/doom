@@ -6,7 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, X, Users, Settings } from "lucide-react";
+import { Check, X, Users, Settings, Image as ImageIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import AdminBankInfo from "./admin/AdminBankInfo";
@@ -238,6 +245,26 @@ const Admin = () => {
                               <span>{format(new Date(recharge.created_at), 'MMM dd, yyyy HH:mm')}</span>
                             </div>
                           </div>
+                          {recharge.payment_proof_url && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="mt-2">
+                                  <ImageIcon className="h-4 w-4 mr-2" />
+                                  View Payment Screenshot
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-3xl">
+                                <DialogHeader>
+                                  <DialogTitle>Payment Screenshot</DialogTitle>
+                                </DialogHeader>
+                                <img 
+                                  src={recharge.payment_proof_url} 
+                                  alt="Payment proof" 
+                                  className="w-full h-auto rounded-lg"
+                                />
+                              </DialogContent>
+                            </Dialog>
+                          )}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           <Button 

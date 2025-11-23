@@ -44,15 +44,19 @@ const Withdrawal = () => {
       
       if (error) throw error;
       
-      // Calculate balance from transactions
-      const totalBalance = data.reduce((sum, transaction) => {
+      // Calculate withdrawable balance: only daily_income and referral_bonus
+      // Exclude: recharge, purchase (initial investment), and withdrawal
+      const withdrawableBalance = data.reduce((sum, transaction) => {
+        if (transaction.type === 'daily_income' || transaction.type === 'referral_bonus') {
+          return sum + Number(transaction.amount);
+        }
         if (transaction.type === 'withdrawal') {
           return sum - Number(transaction.amount);
         }
-        return sum + Number(transaction.amount);
+        return sum; // Don't add recharge/purchase to withdrawable balance
       }, 0);
       
-      return totalBalance;
+      return withdrawableBalance;
     },
     enabled: !!user,
   });
@@ -67,6 +71,10 @@ const Withdrawal = () => {
 
       if (withdrawalAmount <= 0) {
         throw new Error('Amount must be greater than 0');
+      }
+
+      if (balance !== undefined && balance < 300) {
+        throw new Error('Minimum withdrawable balance is ETB 300');
       }
 
       if (balance !== undefined && withdrawalAmount > balance) {
@@ -172,34 +180,37 @@ const Withdrawal = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount ($)</Label>
+                  <Label htmlFor="amount">Amount (ETB)</Label>
                   <Input
                     id="amount"
                     type="number"
                     step="0.01"
-                    min="0.01"
+                    min="300"
                     max={availableBalance}
-                    placeholder="Enter amount"
+                    placeholder="Enter amount (minimum 300)"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
+                    disabled={availableBalance < 300}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Maximum: ETB {availableBalance.toFixed(2)}
+                    {availableBalance < 300 
+                      ? 'Minimum withdrawable balance: ETB 300'
+                      : `Maximum: ETB ${availableBalance.toFixed(2)}`}
                   </p>
                 </div>
 
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Your withdrawal request will be reviewed by admin. Funds will be transferred to your registered bank account after approval.
+                    <strong>Note:</strong> You can only withdraw daily income and bonus earnings (minimum ETB 300). Initial investment amounts cannot be withdrawn. Your request will be reviewed by admin.
                   </AlertDescription>
                 </Alert>
 
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount}
+                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < 300}
                 >
                   {withdrawalMutation.isPending ? 'Submitting...' : 'Submit Withdrawal Request'}
                 </Button>
