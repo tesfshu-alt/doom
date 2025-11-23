@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  signUp: (phoneNumber: string, password: string, referralCode?: string) => Promise<{ error: any }>;
+  signUp: (phoneNumber: string, password: string, referralCode: string) => Promise<{ error: any }>;
   signIn: (phoneNumber: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -74,21 +74,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const signUp = async (phoneNumber: string, password: string, referralCode?: string) => {
+  const signUp = async (phoneNumber: string, password: string, referralCode: string) => {
     const email = `${phoneNumber}@platform.local`;
     const redirectUrl = `${window.location.origin}/`;
     
-    let referred_by = null;
-    if (referralCode) {
-      const { data: referrer } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('referral_code', referralCode)
-        .single();
-      
-      if (referrer) {
-        referred_by = referrer.id;
-      }
+    // Validate referral code exists
+    if (!referralCode || referralCode.trim() === "") {
+      return { error: { message: "Referral code is required to sign up" } };
+    }
+
+    const { data: referrer, error: referrerError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('referral_code', referralCode.trim().toUpperCase())
+      .single();
+    
+    if (referrerError || !referrer) {
+      return { error: { message: "Invalid referral code. Please check and try again." } };
     }
 
     const { error } = await supabase.auth.signUp({
@@ -98,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: redirectUrl,
         data: {
           phone_number: phoneNumber,
-          referred_by: referred_by,
+          referred_by: referrer.id,
         },
       },
     });
