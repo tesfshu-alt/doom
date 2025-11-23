@@ -18,6 +18,7 @@ const Auth = () => {
   const [signupPhone, setSignupPhone] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
+  const [isReferralFromLink, setIsReferralFromLink] = useState(false);
   const [resetPhone, setResetPhone] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -27,6 +28,7 @@ const Auth = () => {
     const refCode = searchParams.get('ref');
     if (refCode) {
       setReferralCode(refCode);
+      setIsReferralFromLink(true);
     }
   }, [searchParams]);
 
@@ -234,10 +236,14 @@ const Auth = () => {
                     placeholder="Enter referral code"
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value)}
+                    disabled={isReferralFromLink}
                     required
+                    className={isReferralFromLink ? "bg-muted cursor-not-allowed" : ""}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Required: Ask your referrer for their code to sign up
+                    {isReferralFromLink 
+                      ? "Referral code applied from your invite link" 
+                      : "Required: Ask your referrer for their code to sign up"}
                   </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
