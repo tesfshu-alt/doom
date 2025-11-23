@@ -83,13 +83,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: { message: "Referral code is required to sign up" } };
     }
 
+    console.log('Validating referral code:', referralCode.trim());
+
     const { data: referrer, error: referrerError } = await supabase
       .from('profiles')
       .select('id')
       .ilike('referral_code', referralCode.trim())
       .maybeSingle();
     
-    if (referrerError || !referrer) {
+    console.log('Referral lookup result:', { referrer, referrerError });
+    
+    if (referrerError) {
+      console.error('Database error looking up referral code:', referrerError);
+      return { error: { message: `Database error: ${referrerError.message}` } };
+    }
+    
+    if (!referrer) {
       return { error: { message: "Invalid referral code. Please check and try again." } };
     }
 
