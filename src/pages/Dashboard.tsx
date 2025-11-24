@@ -43,6 +43,20 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
+  const { data: transactions } = useQuery({
+    queryKey: ['transactions', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   // Set up real-time subscription for user_products
   useEffect(() => {
     if (!user?.id) return;
@@ -73,6 +87,7 @@ const Dashboard = () => {
         () => {
           // Refetch when transactions change
           queryClient.invalidateQueries({ queryKey: ['activeProducts', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['transactions', user.id] });
         }
       )
       .subscribe();
@@ -115,6 +130,17 @@ const Dashboard = () => {
 
   const totalInvestment = activeProducts?.reduce((sum, p) => sum + Number(p.products.price), 0) || 0;
   const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products.daily_income), 0) || 0;
+  
+  // Calculate available balance from transactions
+  const availableBalance = transactions?.reduce((sum, t) => {
+    const amount = Number(t.amount);
+    if (t.type === 'recharge' || t.type === 'referral_bonus' || t.type === 'daily_income') {
+      return sum + amount;
+    } else if (t.type === 'purchase' || t.type === 'withdrawal') {
+      return sum - amount;
+    }
+    return sum;
+  }, 0) || 0;
 
   return (
     <Layout>
@@ -123,6 +149,13 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold">Welcome Back!</h1>
           <p className="text-muted-foreground">Phone: {profile?.phone_number}</p>
         </div>
+
+        <Card className="shadow-elevated bg-gradient-primary animate-fade-in">
+          <CardContent className="p-6 text-center space-y-2">
+            <p className="text-sm text-white/80">Available Balance</p>
+            <p className="text-4xl font-bold text-white">ETB {availableBalance.toFixed(2)}</p>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-2 gap-4 animate-fade-in">
           <Card className="shadow-card">

@@ -40,7 +40,7 @@ const About = () => {
 
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 text-white space-y-2">
-            <h2 className="text-2xl font-bold">Investment Platform</h2>
+            <h2 className="text-2xl font-bold">EthioMax</h2>
             <p className="text-white/90">
               Your trusted partner for smart investment opportunities
             </p>
