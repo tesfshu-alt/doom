@@ -78,8 +78,8 @@ const Auth = () => {
       });
     } else {
       toast({
-        title: "Welcome!",
-        description: "Your account has been created successfully.",
+        title: "Welcome! 🎉",
+        description: "Your account has been created successfully. You've received 50 ETB as a welcome bonus!",
       });
     }
 

@@ -12,10 +12,10 @@ export const useAvailableBalance = (userId: string | undefined) => {
       
       if (error) throw error;
       
-      // Calculate withdrawable balance: only daily_income and referral_bonus
+      // Calculate withdrawable balance: only daily_income, referral_bonus, and welcome_bonus
       // Subtract: withdrawal
       const availableBalance = data.reduce((sum, transaction) => {
-        if (transaction.type === 'daily_income' || transaction.type === 'referral_bonus') {
+        if (transaction.type === 'daily_income' || transaction.type === 'referral_bonus' || transaction.type === 'welcome_bonus') {
           return sum + Number(transaction.amount);
         }
         if (transaction.type === 'withdrawal') {
