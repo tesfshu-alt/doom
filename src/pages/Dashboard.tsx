@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -146,26 +147,38 @@ const Dashboard = () => {
 
         {/* Withdrawal Eligibility Alert */}
         {(availableBalance || 0) < 300 ? (
-          <Alert className="animate-fade-in border-primary/50 bg-primary/5">
-            <AlertCircle className="h-4 w-4 text-primary" />
-            <AlertDescription className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-foreground">
-                  Need ETB {(300 - (availableBalance || 0)).toFixed(2)} more to withdraw
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Minimum withdrawal: ETB 300.00
+          <Card className="animate-fade-in border-primary/50 shadow-card">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-primary" />
+                    <p className="font-semibold text-foreground">
+                      Withdrawal Progress
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    ETB {(availableBalance || 0).toFixed(2)} / ETB 300.00
+                  </p>
+                </div>
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/products')}
+                >
+                  Buy Products
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Progress 
+                  value={((availableBalance || 0) / 300) * 100} 
+                  className="h-3"
+                />
+                <p className="text-xs text-muted-foreground text-center">
+                  Need ETB {(300 - (availableBalance || 0)).toFixed(2)} more to reach minimum withdrawal
                 </p>
               </div>
-              <Button 
-                size="sm" 
-                onClick={() => navigate('/products')}
-                className="ml-2"
-              >
-                Buy Products
-              </Button>
-            </AlertDescription>
-          </Alert>
+            </CardContent>
+          </Card>
         ) : (activeProducts?.length ?? 0) === 0 ? (
           <Alert className="animate-fade-in border-accent/50 bg-accent/5">
             <AlertCircle className="h-4 w-4 text-accent" />
