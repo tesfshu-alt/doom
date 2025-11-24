@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Layout from "@/components/Layout";
 
 const BankAccounts = () => {
@@ -104,12 +105,19 @@ const BankAccounts = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="bankName">Bank Name</Label>
-                <Input
-                  id="bankName"
+                <Select
                   value={formData.bankName}
-                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  onValueChange={(value) => setFormData({ ...formData, bankName: value })}
                   required
-                />
+                >
+                  <SelectTrigger id="bankName">
+                    <SelectValue placeholder="Select bank" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CBE">CBE</SelectItem>
+                    <SelectItem value="Telebirr">Telebirr</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="accountName">Account Name</Label>
