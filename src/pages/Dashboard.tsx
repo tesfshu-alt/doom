@@ -132,6 +132,14 @@ const Dashboard = () => {
           <CardContent className="p-6 text-center space-y-2">
             <p className="text-sm text-white/80">Available Balance</p>
             <p className="text-4xl font-bold text-white">ETB {(availableBalance || 0).toFixed(2)}</p>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => navigate('/mine/records')}
+              className="mt-2"
+            >
+              View Transaction History
+            </Button>
           </CardContent>
         </Card>
 
