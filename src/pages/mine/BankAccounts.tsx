@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, CreditCard } from "lucide-react";
+import { ArrowLeft, Plus, CreditCard, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import Layout from "@/components/Layout";
 
 const BankAccounts = () => {
@@ -73,6 +74,31 @@ const BankAccounts = () => {
     },
   });
 
+  const deleteBankMutation = useMutation({
+    mutationFn: async (bankAccountId: string) => {
+      const { error } = await supabase
+        .from('bank_accounts')
+        .delete()
+        .eq('id', bankAccountId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      toast({
+        title: "Success!",
+        description: "Bank account deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addBankMutation.mutate();
@@ -91,13 +117,14 @@ const BankAccounts = () => {
           </div>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Bank Account
-            </Button>
-          </DialogTrigger>
+        {(!bankAccounts || bankAccounts.length === 0) && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Bank Account
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Bank Account</DialogTitle>
@@ -143,6 +170,7 @@ const BankAccounts = () => {
             </form>
           </DialogContent>
         </Dialog>
+        )}
 
         <div className="space-y-3">
           {bankAccounts && bankAccounts.length > 0 ? (
@@ -158,6 +186,30 @@ const BankAccounts = () => {
                       <p className="text-sm text-muted-foreground">{account.account_name}</p>
                       <p className="text-sm font-mono">{account.account_number}</p>
                     </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Bank Account</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this bank account? You can add a new one after deletion.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteBankMutation.mutate(account.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>
