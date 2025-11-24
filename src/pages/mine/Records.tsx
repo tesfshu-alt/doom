@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, TrendingUp, TrendingDown, History, DollarSign, Gift, Wallet, ShoppingCart } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, History, DollarSign, Gift, Wallet, ShoppingCart, Clock, CheckCircle, XCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,36 @@ const Records = () => {
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: recharges } = useQuery({
+    queryKey: ['recharges', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('recharges')
+        .select('*, products(name)')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: withdrawals } = useQuery({
+    queryKey: ['withdrawals', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('*, bank_accounts(bank_name, account_number)')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
       
@@ -84,6 +114,19 @@ const Records = () => {
     return '+';
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-600/20"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+      case 'approved':
+        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-600/20"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
+      case 'rejected':
+        return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-600/20"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
   const transactionStats = {
     all: transactions?.length || 0,
     daily_income: transactions?.filter(t => t.type === 'daily_income').length || 0,
@@ -105,22 +148,19 @@ const Records = () => {
         </div>
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="animate-fade-in">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="all" className="text-xs">
-              All ({transactionStats.all})
+              Transactions
             </TabsTrigger>
-            <TabsTrigger value="daily_income" className="text-xs">
-              Income ({transactionStats.daily_income})
+            <TabsTrigger value="recharges" className="text-xs">
+              Recharges
             </TabsTrigger>
-            <TabsTrigger value="referral_bonus" className="text-xs">
-              Bonus ({transactionStats.referral_bonus})
-            </TabsTrigger>
-            <TabsTrigger value="withdrawal" className="text-xs">
-              Withdrawal ({transactionStats.withdrawal})
+            <TabsTrigger value="withdrawals" className="text-xs">
+              Withdrawals
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={selectedTab} className="space-y-3 mt-4">
+          <TabsContent value="all" className="space-y-3 mt-4">
             {filteredTransactions && filteredTransactions.length > 0 ? (
               <div className="space-y-2">
                 {filteredTransactions.map((transaction) => (
@@ -153,11 +193,83 @@ const Records = () => {
               <Card className="shadow-card">
                 <CardContent className="p-8 text-center">
                   <History className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    {selectedTab === "all" 
-                      ? "No transactions yet" 
-                      : `No ${selectedTab.replace('_', ' ')} transactions`}
-                  </p>
+                  <p className="text-muted-foreground">No transactions yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="recharges" className="space-y-3 mt-4">
+            {recharges && recharges.length > 0 ? (
+              <div className="space-y-2">
+                {recharges.map((recharge) => (
+                  <Card key={recharge.id} className="shadow-card hover:shadow-elevated transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500/10">
+                            <Wallet className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <p className="font-semibold truncate">{recharge.products?.name || 'Product'}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(recharge.created_at), 'MMM dd, yyyy HH:mm')}
+                            </p>
+                            {getStatusBadge(recharge.status)}
+                          </div>
+                        </div>
+                        <p className="text-lg font-bold flex-shrink-0 text-primary">
+                          ETB {Number(recharge.amount).toFixed(2)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="shadow-card">
+                <CardContent className="p-8 text-center">
+                  <Wallet className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">No recharge requests yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="withdrawals" className="space-y-3 mt-4">
+            {withdrawals && withdrawals.length > 0 ? (
+              <div className="space-y-2">
+                {withdrawals.map((withdrawal) => (
+                  <Card key={withdrawal.id} className="shadow-card hover:shadow-elevated transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 bg-red-500/10">
+                            <TrendingDown className="h-5 w-5 text-red-600" />
+                          </div>
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <p className="font-semibold truncate">
+                              {withdrawal.bank_accounts?.bank_name} - {withdrawal.bank_accounts?.account_number}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}
+                            </p>
+                            {getStatusBadge(withdrawal.status)}
+                          </div>
+                        </div>
+                        <p className="text-lg font-bold flex-shrink-0 text-red-600">
+                          -ETB {Number(withdrawal.amount).toFixed(2)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="shadow-card">
+                <CardContent className="p-8 text-center">
+                  <TrendingDown className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">No withdrawal requests yet</p>
                 </CardContent>
               </Card>
             )}
