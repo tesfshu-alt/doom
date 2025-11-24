@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Package, Users, User, CreditCard, Wallet, TrendingUp } from "lucide-react";
+import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -142,6 +143,72 @@ const Dashboard = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Withdrawal Eligibility Alert */}
+        {(availableBalance || 0) < 300 ? (
+          <Alert className="animate-fade-in border-primary/50 bg-primary/5">
+            <AlertCircle className="h-4 w-4 text-primary" />
+            <AlertDescription className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-foreground">
+                  Need ETB {(300 - (availableBalance || 0)).toFixed(2)} more to withdraw
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Minimum withdrawal: ETB 300.00
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={() => navigate('/products')}
+                className="ml-2"
+              >
+                Buy Products
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : (activeProducts?.length ?? 0) === 0 ? (
+          <Alert className="animate-fade-in border-accent/50 bg-accent/5">
+            <AlertCircle className="h-4 w-4 text-accent" />
+            <AlertDescription className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-foreground">
+                  Purchase a product to withdraw
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You have ETB {(availableBalance || 0).toFixed(2)} available
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={() => navigate('/products')}
+                className="ml-2"
+              >
+                View Products
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert className="animate-fade-in border-secondary/50 bg-secondary/5">
+            <CheckCircle className="h-4 w-4 text-secondary" />
+            <AlertDescription className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-foreground">
+                  You can now withdraw!
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Available: ETB {(availableBalance || 0).toFixed(2)}
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={() => navigate('/withdrawal')}
+                className="ml-2"
+              >
+                Withdraw Now
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="grid grid-cols-2 gap-4 animate-fade-in">
           <Card className="shadow-card">
