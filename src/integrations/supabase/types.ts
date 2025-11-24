@@ -411,6 +411,7 @@ export type Database = {
         | "referral_bonus"
         | "daily_income"
         | "withdrawal"
+        | "welcome_bonus"
       user_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -546,6 +547,7 @@ export const Constants = {
         "referral_bonus",
         "daily_income",
         "withdrawal",
+        "welcome_bonus",
       ],
       user_role: ["admin", "user"],
     },
