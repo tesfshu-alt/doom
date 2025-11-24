@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import { useQuery } from "@tanstack/react-query";
 
 const Withdrawal = () => {
   const { user } = useAuth();
@@ -34,32 +36,7 @@ const Withdrawal = () => {
     enabled: !!user,
   });
 
-  const { data: balance } = useQuery({
-    queryKey: ['balance', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('amount, type')
-        .eq('user_id', user?.id);
-      
-      if (error) throw error;
-      
-      // Calculate withdrawable balance: only daily_income and referral_bonus
-      // Exclude: recharge, purchase (initial investment), and withdrawal
-      const withdrawableBalance = data.reduce((sum, transaction) => {
-        if (transaction.type === 'daily_income' || transaction.type === 'referral_bonus') {
-          return sum + Number(transaction.amount);
-        }
-        if (transaction.type === 'withdrawal') {
-          return sum - Number(transaction.amount);
-        }
-        return sum; // Don't add recharge/purchase to withdrawable balance
-      }, 0);
-      
-      return withdrawableBalance;
-    },
-    enabled: !!user,
-  });
+  const { data: balance } = useAvailableBalance(user?.id);
 
   const withdrawalMutation = useMutation({
     mutationFn: async () => {
@@ -91,7 +68,7 @@ const Withdrawal = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
       queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
       toast({
         title: "Success",

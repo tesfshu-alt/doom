@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Check, X, Settings } from "lucide-react";
 import { format } from "date-fns";
+import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 
 const AdminWithdrawals = () => {
   const { user } = useAuth();
@@ -37,6 +38,16 @@ const AdminWithdrawals = () => {
       }));
     },
   });
+
+  // Component to display user balance
+  const UserBalance = ({ userId }: { userId: string }) => {
+    const { data: balance } = useAvailableBalance(userId);
+    return (
+      <span className="text-muted-foreground">
+        Available: <span className="font-semibold text-foreground">ETB {(balance || 0).toFixed(2)}</span>
+      </span>
+    );
+  };
 
   const approveMutation = useMutation({
     mutationFn: async (withdrawalId: string) => {
@@ -69,7 +80,7 @@ const AdminWithdrawals = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingWithdrawals'] });
-      queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
       toast({ title: "Success", description: "Withdrawal approved successfully" });
     },
     onError: (error: Error) => {
@@ -131,6 +142,9 @@ const AdminWithdrawals = () => {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Name: {withdrawal.bank_accounts?.account_name}
+                    </p>
+                    <p className="text-sm">
+                      <UserBalance userId={withdrawal.user_id} />
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
