@@ -38,12 +38,32 @@ const Withdrawal = () => {
 
   const { data: balance } = useAvailableBalance(user?.id);
 
+  const { data: userProducts } = useQuery({
+    queryKey: ['userProducts', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_products')
+        .select('id')
+        .eq('user_id', user?.id)
+        .limit(1);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const hasProducts = (userProducts?.length ?? 0) > 0;
+
   const withdrawalMutation = useMutation({
     mutationFn: async () => {
       const withdrawalAmount = parseFloat(amount);
       
       if (!selectedBankId) {
         throw new Error('Please select a bank account');
+      }
+
+      if (!hasProducts) {
+        throw new Error('You must purchase at least one product before making a withdrawal');
       }
 
       if (withdrawalAmount <= 0) {
@@ -168,10 +188,12 @@ const Withdrawal = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    disabled={availableBalance < 300}
+                    disabled={availableBalance < 300 || !hasProducts}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {availableBalance < 300 
+                    {!hasProducts
+                      ? 'You must purchase at least one product to withdraw'
+                      : availableBalance < 300 
                       ? 'Minimum withdrawable balance: ETB 300'
                       : `Maximum: ETB ${availableBalance.toFixed(2)}`}
                   </p>
@@ -180,14 +202,14 @@ const Withdrawal = () => {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Note:</strong> You can only withdraw daily income and bonus earnings (minimum ETB 300). Initial investment amounts cannot be withdrawn. Your request will be reviewed by admin.
+                    <strong>Note:</strong> You must purchase at least one product before withdrawing. You can only withdraw daily income and bonus earnings (minimum ETB 300). Initial investment amounts cannot be withdrawn. Your request will be reviewed by admin.
                   </AlertDescription>
                 </Alert>
 
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < 300}
+                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < 300 || !hasProducts}
                 >
                   {withdrawalMutation.isPending ? 'Submitting...' : 'Submit Withdrawal Request'}
                 </Button>
