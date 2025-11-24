@@ -22,6 +22,7 @@ import AdminWithdrawals from "./admin/AdminWithdrawals";
 import AdminDailyIncome from "./admin/AdminDailyIncome";
 import AdminReferralSettings from "./admin/AdminReferralSettings";
 import AdminCustomerService from "./admin/AdminCustomerService";
+import AdminPasswordReset from "./admin/AdminPasswordReset";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
   const { data: userRecharges } = useQuery({
@@ -352,7 +353,7 @@ const Admin = () => {
 
         <Tabs defaultValue="recharges" className="space-y-4">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-8 min-w-[640px]">
+            <TabsList className="grid w-full grid-cols-9 min-w-[720px]">
               <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
               <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
               <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
@@ -360,6 +361,7 @@ const Admin = () => {
               <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
               <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
               <TabsTrigger value="bank" className="text-xs sm:text-sm">Bank</TabsTrigger>
+              <TabsTrigger value="password" className="text-xs sm:text-sm">Password</TabsTrigger>
               <TabsTrigger value="support" className="text-xs sm:text-sm">Support</TabsTrigger>
             </TabsList>
           </div>
@@ -495,6 +497,10 @@ const Admin = () => {
 
           <TabsContent value="bank" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminBankInfo />
+          </TabsContent>
+
+          <TabsContent value="password" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminPasswordReset />
           </TabsContent>
 
           <TabsContent value="support" className="max-h-[calc(100vh-250px)] overflow-y-auto">
