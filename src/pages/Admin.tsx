@@ -60,11 +60,15 @@ const UserHistoryContent = ({ userId }: { userId: string }) => {
         .eq('user_id', userId);
       if (error) throw error;
       
+      // Calculate available balance: only earnings (daily_income, referral_bonus, welcome_bonus) minus withdrawals
       const balance = data?.reduce((acc, transaction) => {
+        if (transaction.type === 'daily_income' || transaction.type === 'referral_bonus' || transaction.type === 'welcome_bonus') {
+          return acc + transaction.amount;
+        }
         if (transaction.type === 'withdrawal') {
           return acc - transaction.amount;
         }
-        return acc + transaction.amount;
+        return acc; // Don't count recharge/purchase
       }, 0) || 0;
       
       return balance;
