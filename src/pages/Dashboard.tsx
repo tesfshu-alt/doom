@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
+import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, CheckCircle, MessageCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
@@ -47,6 +47,21 @@ const Dashboard = () => {
   });
 
   const { data: availableBalance } = useAvailableBalance(user?.id);
+
+  const { data: telegramContact } = useQuery({
+    queryKey: ['telegram-contact'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_service_contacts')
+        .select('*')
+        .eq('contact_type', 'telegram')
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // Set up real-time subscription for user_products
   useEffect(() => {
@@ -270,6 +285,31 @@ const Dashboard = () => {
             })}
           </div>
         </div>
+
+        {telegramContact && (
+          <Card className="shadow-card animate-fade-in bg-gradient-to-br from-primary to-secondary">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-3 rounded-full">
+                    <MessageCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Join Our Telegram</h3>
+                    <p className="text-sm text-white/80">{telegramContact.value}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => window.open(telegramContact.link, '_blank')}
+                >
+                  Join Now
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {activeProducts && activeProducts.length > 0 && (
           <div className="space-y-3">
