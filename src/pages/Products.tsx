@@ -195,23 +195,23 @@ const Products = () => {
                               <CardTitle className="text-base text-white">{selectedProduct.name}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3 text-white">
-                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                              <div className="flex justify-between items-center py-2 border-b border-accent/30">
                                 <span className="text-white/80">Investment Amount</span>
                                 <span className="font-bold text-lg">ETB {selectedProduct.price}</span>
                               </div>
-                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                              <div className="flex justify-between items-center py-2 border-b border-accent/30">
                                 <span className="text-white/80">Daily Income</span>
                                 <span className="font-bold text-accent">ETB {calculateEarnings(selectedProduct).dailyIncome}</span>
                               </div>
-                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                              <div className="flex justify-between items-center py-2 border-b border-accent/30">
                                 <span className="text-white/80">Contract Period</span>
                                 <span className="font-semibold">{calculateEarnings(selectedProduct).validityDays} days</span>
                               </div>
-                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                              <div className="flex justify-between items-center py-2 border-b border-accent/30">
                                 <span className="text-white/80">Total Earnings</span>
-                                <span className="font-bold text-lg text-secondary">ETB {calculateEarnings(selectedProduct).totalIncome}</span>
+                                <span className="font-bold text-lg text-white">ETB {calculateEarnings(selectedProduct).totalIncome}</span>
                               </div>
-                              <div className="flex justify-between items-center py-2 border-b border-white/20">
+                              <div className="flex justify-between items-center py-2 border-b border-accent/30">
                                 <span className="text-white/80">Net Profit</span>
                                 <span className="font-bold text-lg text-green-300">ETB {calculateEarnings(selectedProduct).profit}</span>
                               </div>
