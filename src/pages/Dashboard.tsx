@@ -9,7 +9,6 @@ import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -184,11 +183,13 @@ const Dashboard = () => {
                 </Button>
               </div>
               <div className="space-y-2">
-                <Progress 
-                  value={((availableBalance || 0) / 300) * 100} 
-                  className="h-3"
-                />
-                <p className="text-xs text-muted-foreground text-center">
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted/30 border border-primary/20">
+                  <div 
+                    className="h-full bg-gradient-to-r from-accent to-primary transition-all duration-500"
+                    style={{ width: `${((availableBalance || 0) / 300) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs font-medium text-foreground text-center">
                   Need ETB {(300 - (availableBalance || 0)).toFixed(2)} more to reach minimum withdrawal
                 </p>
               </div>
