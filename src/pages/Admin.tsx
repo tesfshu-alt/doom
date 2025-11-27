@@ -24,6 +24,7 @@ import AdminReferralSettings from "./admin/AdminReferralSettings";
 import AdminCustomerService from "./admin/AdminCustomerService";
 import AdminPasswordReset from "./admin/AdminPasswordReset";
 import AdminBonusCodes from "./admin/AdminBonusCodes";
+import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
   const { data: userRecharges } = useQuery({
@@ -384,7 +385,7 @@ const Admin = () => {
 
         <Tabs defaultValue="recharges" className="space-y-4">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-10 min-w-[800px]">
+            <TabsList className="grid w-full grid-cols-11 min-w-[900px]">
               <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
               <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
               <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
@@ -395,6 +396,7 @@ const Admin = () => {
               <TabsTrigger value="bank" className="text-xs sm:text-sm">Bank</TabsTrigger>
               <TabsTrigger value="password" className="text-xs sm:text-sm">Password</TabsTrigger>
               <TabsTrigger value="support" className="text-xs sm:text-sm">Support</TabsTrigger>
+              <TabsTrigger value="withdrawal-fee" className="text-xs sm:text-sm">W. Fee</TabsTrigger>
             </TabsList>
           </div>
 
@@ -541,6 +543,10 @@ const Admin = () => {
 
           <TabsContent value="support" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminCustomerService />
+          </TabsContent>
+
+          <TabsContent value="withdrawal-fee" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminWithdrawalFee />
           </TabsContent>
         </Tabs>
       </div>

@@ -38,6 +38,18 @@ const Withdrawal = () => {
 
   const { data: balance } = useAvailableBalance(user?.id);
 
+  const { data: feeSettings } = useQuery({
+    queryKey: ['withdrawalFeeSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawal_fee_settings')
+        .select('*')
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: userProducts } = useQuery({
     queryKey: ['userProducts', user?.id],
     queryFn: async () => {
@@ -113,6 +125,11 @@ const Withdrawal = () => {
   };
 
   const availableBalance = balance || 0;
+  const withdrawalAmount = parseFloat(amount) || 0;
+  const feeAmount = (feeSettings?.enabled && withdrawalAmount > 0) 
+    ? withdrawalAmount * (Number(feeSettings.fee_percentage) / 100) 
+    : 0;
+  const netAmount = withdrawalAmount - feeAmount;
 
   return (
     <Layout>
@@ -198,6 +215,23 @@ const Withdrawal = () => {
                       : `Maximum: ETB ${availableBalance.toFixed(2)}`}
                   </p>
                 </div>
+
+                {feeSettings?.enabled && withdrawalAmount > 0 && (
+                  <div className="p-3 bg-muted rounded-lg space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Withdrawal Amount:</span>
+                      <span className="font-semibold">ETB {withdrawalAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-destructive">
+                      <span>Maintenance Fee ({feeSettings.fee_percentage}%):</span>
+                      <span className="font-semibold">- ETB {feeAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2">
+                      <span className="font-semibold">Net Amount:</span>
+                      <span className="font-bold text-primary">ETB {netAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
 
                 <Alert>
                   <AlertCircle className="h-4 w-4" />

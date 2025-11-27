@@ -416,6 +416,30 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_fee_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          fee_percentage: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          fee_percentage?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          fee_percentage?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       withdrawals: {
         Row: {
           amount: number

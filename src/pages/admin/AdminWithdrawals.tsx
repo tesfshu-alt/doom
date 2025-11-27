@@ -14,6 +14,18 @@ const AdminWithdrawals = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const { data: feeSettings } = useQuery({
+    queryKey: ['withdrawalFeeSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawal_fee_settings')
+        .select('*')
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: pendingWithdrawals } = useQuery({
     queryKey: ['pendingWithdrawals'],
     queryFn: async () => {
@@ -54,6 +66,12 @@ const AdminWithdrawals = () => {
       const withdrawal = pendingWithdrawals?.find(w => w.id === withdrawalId);
       if (!withdrawal) throw new Error('Withdrawal not found');
 
+      // Calculate fee if enabled
+      const feeAmount = (feeSettings?.enabled) 
+        ? withdrawal.amount * (Number(feeSettings.fee_percentage) / 100) 
+        : 0;
+      const netAmount = withdrawal.amount - feeAmount;
+
       // Update withdrawal status
       const { error: withdrawalError } = await supabase
         .from('withdrawals')
@@ -66,14 +84,14 @@ const AdminWithdrawals = () => {
 
       if (withdrawalError) throw withdrawalError;
 
-      // Create transaction record
+      // Create transaction record for the net withdrawal amount
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
           user_id: withdrawal.user_id,
-          amount: withdrawal.amount,
+          amount: netAmount,
           type: 'withdrawal',
-          description: `Withdrawal to ${withdrawal.bank_accounts?.bank_name} - ${withdrawal.bank_accounts?.account_number}`,
+          description: `Withdrawal to ${withdrawal.bank_accounts?.bank_name} - ${withdrawal.bank_accounts?.account_number}${feeAmount > 0 ? ` (Fee: ETB ${feeAmount.toFixed(2)})` : ''}`,
         });
 
       if (transactionError) throw transactionError;
@@ -151,6 +169,18 @@ const AdminWithdrawals = () => {
                     <div>
                       <span className="text-muted-foreground">Amount: </span>
                       <span className="font-bold text-primary">ETB {withdrawal.amount}</span>
+                      {feeSettings?.enabled && (
+                        <>
+                          <br />
+                          <span className="text-xs text-destructive">
+                            Fee ({feeSettings.fee_percentage}%): ETB {(withdrawal.amount * Number(feeSettings.fee_percentage) / 100).toFixed(2)}
+                          </span>
+                          <br />
+                          <span className="text-xs font-semibold">
+                            Net: ETB {(withdrawal.amount - (withdrawal.amount * Number(feeSettings.fee_percentage) / 100)).toFixed(2)}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Date: </span>
