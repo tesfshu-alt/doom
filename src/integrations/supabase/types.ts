@@ -18,7 +18,8 @@ export type Database = {
         Row: {
           account_name: string
           account_number: string
-          bank_name: string
+          account_type: Database["public"]["Enums"]["payment_account_type"]
+          bank_name: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -26,7 +27,8 @@ export type Database = {
         Insert: {
           account_name: string
           account_number: string
-          bank_name: string
+          account_type?: Database["public"]["Enums"]["payment_account_type"]
+          bank_name?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -34,7 +36,8 @@ export type Database = {
         Update: {
           account_name?: string
           account_number?: string
-          bank_name?: string
+          account_type?: Database["public"]["Enums"]["payment_account_type"]
+          bank_name?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -472,6 +475,7 @@ export type Database = {
       }
     }
     Enums: {
+      payment_account_type: "bank" | "telebirr"
       recharge_status: "pending" | "approved" | "rejected"
       transaction_type:
         | "recharge"
@@ -608,6 +612,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      payment_account_type: ["bank", "telebirr"],
       recharge_status: ["pending", "approved", "rejected"],
       transaction_type: [
         "recharge",
