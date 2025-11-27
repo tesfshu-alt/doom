@@ -171,7 +171,7 @@ const Team = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex gap-2">
                 <span className="text-primary font-semibold">•</span>
-                <p>Earn <span className="font-semibold text-foreground">35% bonus</span> when your direct referral makes their first investment</p>
+                <p>Earn <span className="font-semibold text-foreground">{referralSettings?.bonus_amount || 0}% bonus</span> when your direct referral makes their first investment</p>
               </div>
               <div className="flex gap-2">
                 <span className="text-primary font-semibold">•</span>
