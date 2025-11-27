@@ -319,7 +319,7 @@ const Dashboard = () => {
           <div className="space-y-3">
             <h2 className="text-lg font-semibold">Active Products</h2>
             <div className="space-y-2">
-              {activeProducts.map((product) => (
+              {activeProducts.filter(p => p.products).map((product) => (
                 <Card key={product.id} className="shadow-card">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
