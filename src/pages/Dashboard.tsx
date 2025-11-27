@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import BonusCodeClaim from "@/components/BonusCodeClaim";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -311,6 +312,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         )}
+
+        <BonusCodeClaim />
 
         {activeProducts && activeProducts.length > 0 && (
           <div className="space-y-3">

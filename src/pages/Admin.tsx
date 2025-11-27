@@ -23,6 +23,7 @@ import AdminDailyIncome from "./admin/AdminDailyIncome";
 import AdminReferralSettings from "./admin/AdminReferralSettings";
 import AdminCustomerService from "./admin/AdminCustomerService";
 import AdminPasswordReset from "./admin/AdminPasswordReset";
+import AdminBonusCodes from "./admin/AdminBonusCodes";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
   const { data: userRecharges } = useQuery({
@@ -289,10 +290,10 @@ const Admin = () => {
             .single();
 
           if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
-            // Calculate 35% of the purchase amount as referral bonus
+            // Calculate 35% of the purchase amount as referral bonus (1st level)
             const bonusAmount = (recharge.amount * referralSettings.bonus_amount) / 100;
             
-            // Credit referral bonus to the referrer
+            // Credit referral bonus to the direct referrer (1st level)
             const { error: bonusError } = await supabase
               .from('transactions')
               .insert({
@@ -304,6 +305,32 @@ const Admin = () => {
 
             if (bonusError) {
               console.error('Error crediting referral bonus:', bonusError);
+            }
+
+            // Check for 2nd level referral (referrer's referrer)
+            const { data: referrerProfile } = await supabase
+              .from('profiles')
+              .select('referred_by')
+              .eq('id', profile.referred_by)
+              .single();
+
+            if (referrerProfile?.referred_by) {
+              // Calculate 3% bonus for 2nd level referrer
+              const secondLevelBonus = (recharge.amount * 3) / 100;
+              
+              // Credit 2nd level referral bonus
+              const { error: secondLevelError } = await supabase
+                .from('transactions')
+                .insert({
+                  user_id: referrerProfile.referred_by,
+                  amount: secondLevelBonus,
+                  type: 'referral_bonus',
+                  description: `2nd level referral bonus (3%) from indirect referral`,
+                });
+
+              if (secondLevelError) {
+                console.error('Error crediting 2nd level referral bonus:', secondLevelError);
+              }
             }
           }
         }
@@ -357,11 +384,12 @@ const Admin = () => {
 
         <Tabs defaultValue="recharges" className="space-y-4">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-9 min-w-[720px]">
+            <TabsList className="grid w-full grid-cols-10 min-w-[800px]">
               <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
               <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
               <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
               <TabsTrigger value="referral" className="text-xs sm:text-sm">Referral</TabsTrigger>
+              <TabsTrigger value="bonus-codes" className="text-xs sm:text-sm">Bonus Codes</TabsTrigger>
               <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
               <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
               <TabsTrigger value="bank" className="text-xs sm:text-sm">Bank</TabsTrigger>
@@ -451,6 +479,10 @@ const Admin = () => {
 
           <TabsContent value="referral" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminReferralSettings />
+          </TabsContent>
+
+          <TabsContent value="bonus-codes" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminBonusCodes />
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">

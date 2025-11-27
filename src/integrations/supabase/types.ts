@@ -71,6 +71,74 @@ export type Database = {
         }
         Relationships: []
       }
+      bonus_code_claims: {
+        Row: {
+          bonus_amount: number
+          claimed_at: string
+          code_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          bonus_amount: number
+          claimed_at?: string
+          code_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          bonus_amount?: number
+          claimed_at?: string
+          code_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bonus_code_claims_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "bonus_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bonus_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          max_bonus: number
+          max_claims: number
+          min_bonus: number
+          total_claims: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          max_bonus?: number
+          max_claims?: number
+          min_bonus?: number
+          total_claims?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          max_bonus?: number
+          max_claims?: number
+          min_bonus?: number
+          total_claims?: number
+        }
+        Relationships: []
+      }
       customer_service_contacts: {
         Row: {
           contact_type: string
