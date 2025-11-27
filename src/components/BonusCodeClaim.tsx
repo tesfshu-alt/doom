@@ -45,13 +45,39 @@ const BonusCodeClaim = () => {
       // Check if user already claimed this code
       const { data: existingClaim } = await supabase
         .from('bonus_code_claims')
-        .select('id')
+        .select('id, bonus_amount')
         .eq('user_id', user?.id)
         .eq('code_id', codeData.id)
         .maybeSingle();
 
       if (existingClaim) {
-        throw new Error("You have already claimed this bonus code");
+        // Check if the bonus was actually credited (transaction exists)
+        const { data: existingTransaction } = await supabase
+          .from('transactions')
+          .select('id')
+          .eq('user_id', user?.id)
+          .eq('description', `Bonus code reward: ${codeData.code}`)
+          .maybeSingle();
+
+        if (existingTransaction) {
+          throw new Error("You have already claimed this bonus code");
+        }
+
+        // Orphaned claim detected - credit the bonus now
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: user?.id,
+            amount: existingClaim.bonus_amount,
+            type: 'referral_bonus',
+            description: `Bonus code reward: ${codeData.code}`,
+          });
+
+        if (transactionError) {
+          throw new Error("Failed to credit bonus. Please contact support.");
+        }
+
+        return existingClaim.bonus_amount;
       }
 
       // Calculate bonus amount based on claims (higher for earlier claims)
@@ -88,7 +114,22 @@ const BonusCodeClaim = () => {
           description: `Bonus code reward: ${codeData.code}`,
         });
 
-      if (transactionError) throw transactionError;
+      if (transactionError) {
+        // Rollback the claim if transaction fails
+        await supabase
+          .from('bonus_code_claims')
+          .delete()
+          .eq('user_id', user?.id)
+          .eq('code_id', codeData.id);
+        
+        // Rollback the total_claims increment
+        await supabase
+          .from('bonus_codes')
+          .update({ total_claims: codeData.total_claims })
+          .eq('id', codeData.id);
+
+        throw new Error("Failed to credit bonus. Please try again.");
+      }
 
       return bonusAmount;
     },
