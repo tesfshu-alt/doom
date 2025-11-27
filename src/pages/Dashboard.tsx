@@ -134,8 +134,8 @@ const Dashboard = () => {
     },
   ];
 
-  const totalInvestment = activeProducts?.reduce((sum, p) => sum + Number(p.products.price), 0) || 0;
-  const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products.daily_income), 0) || 0;
+  const totalInvestment = activeProducts?.reduce((sum, p) => sum + Number(p.products?.price || 0), 0) || 0;
+  const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
 
   return (
     <Layout>
