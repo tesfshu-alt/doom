@@ -163,23 +163,27 @@ const Recharge = () => {
           <CardContent className="space-y-4">
             {adminBank && (
               <div className="space-y-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div className="space-y-2">
-                  <p className="text-sm text-white/80">Bank Name</p>
-                  <div className="flex items-center justify-between bg-white/20 rounded p-2">
-                    <span className="text-white font-semibold">{adminBank.bank_name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(adminBank.bank_name, 'Bank name')}
-                      className="text-white hover:bg-white/20"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
+                {adminBank.account_type === 'bank' && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-white/80">Bank Name</p>
+                    <div className="flex items-center justify-between bg-white/20 rounded p-2">
+                      <span className="text-white font-semibold">{adminBank.bank_name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(adminBank.bank_name, 'Bank name')}
+                        className="text-white hover:bg-white/20"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="space-y-2">
-                  <p className="text-sm text-white/80">Account Name</p>
+                  <p className="text-sm text-white/80">
+                    {adminBank.account_type === 'telebirr' ? 'Telebirr Account Name' : 'Account Name'}
+                  </p>
                   <div className="flex items-center justify-between bg-white/20 rounded p-2">
                     <span className="text-white font-semibold">{adminBank.account_name}</span>
                     <Button
@@ -194,13 +198,20 @@ const Recharge = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm text-white/80">Account Number</p>
+                  <p className="text-sm text-white/80">
+                    {adminBank.account_type === 'telebirr' ? 'Telebirr Number' : 'Account Number'}
+                  </p>
                   <div className="flex items-center justify-between bg-white/20 rounded p-2">
-                    <span className="text-white font-semibold">{adminBank.account_number}</span>
+                    <span className="text-white font-semibold">
+                      {adminBank.account_type === 'telebirr' ? `+251${adminBank.account_number}` : adminBank.account_number}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(adminBank.account_number, 'Account number')}
+                      onClick={() => copyToClipboard(
+                        adminBank.account_type === 'telebirr' ? `+251${adminBank.account_number}` : adminBank.account_number,
+                        adminBank.account_type === 'telebirr' ? 'Telebirr number' : 'Account number'
+                      )}
                       className="text-white hover:bg-white/20"
                     >
                       <Copy className="h-4 w-4" />
