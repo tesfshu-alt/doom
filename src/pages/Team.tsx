@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Users, UserPlus, Calendar, Gift } from "lucide-react";
+import { Copy, Users, UserPlus, Calendar, Gift, CheckCircle2, Clock } from "lucide-react";
 import Layout from "@/components/Layout";
 import { format } from "date-fns";
+import { Progress } from "@/components/ui/progress";
 
 const Team = () => {
   const { user } = useAuth();
@@ -37,7 +38,25 @@ const Team = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      
+      // For each referral, check if they have an approved recharge
+      const referralsWithStatus = await Promise.all(
+        data.map(async (referral) => {
+          const { data: rechargeData } = await supabase
+            .from('recharges')
+            .select('id')
+            .eq('user_id', referral.id)
+            .eq('status', 'approved')
+            .limit(1);
+          
+          return {
+            ...referral,
+            hasInvested: (rechargeData?.length || 0) > 0,
+          };
+        })
+      );
+      
+      return referralsWithStatus;
     },
     enabled: !!user,
   });
@@ -143,13 +162,36 @@ const Team = () => {
           </Card>
         </div>
 
+        <Card className="shadow-card bg-primary/5 border-primary/20">
+          <CardContent className="p-4 space-y-3">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Gift className="h-4 w-4 text-primary" />
+              Referral Bonus Rules
+            </h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex gap-2">
+                <span className="text-primary font-semibold">•</span>
+                <p>Earn <span className="font-semibold text-foreground">35% bonus</span> when your direct referral makes their first investment</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-primary font-semibold">•</span>
+                <p>Earn <span className="font-semibold text-foreground">3% bonus</span> when your referral's referral makes their first investment</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-primary font-semibold">•</span>
+                <p>Bonuses are credited only after the investment is approved by admin</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Team Members</h2>
           {referrals && referrals.length > 0 ? (
             <div className="space-y-2">
               {referrals.map((referral) => (
                 <Card key={referral.id} className="shadow-card">
-                  <CardContent className="p-4">
+                  <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center">
@@ -163,6 +205,21 @@ const Team = () => {
                           </div>
                         </div>
                       </div>
+                      {referral.hasInvested ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <Clock className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Investment Status</span>
+                        <span className={referral.hasInvested ? "text-green-500 font-semibold" : "text-muted-foreground"}>
+                          {referral.hasInvested ? "Invested" : "Not Yet Invested"}
+                        </span>
+                      </div>
+                      <Progress value={referral.hasInvested ? 100 : 0} className="h-2" />
                     </div>
                   </CardContent>
                 </Card>
