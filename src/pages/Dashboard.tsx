@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, CheckCircle, MessageCircle } from "lucide-react";
+import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, CheckCircle, MessageCircle, XCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
@@ -61,6 +61,23 @@ const Dashboard = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: recentRecharges } = useQuery({
+    queryKey: ['recent-recharges', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('recharges')
+        .select('*, products(name)')
+        .eq('user_id', user?.id)
+        .in('status', ['rejected', 'approved'])
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
   });
 
   // Set up real-time subscription for user_products
@@ -239,6 +256,35 @@ const Dashboard = () => {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Recharge Status Messages */}
+        {recentRecharges?.map((recharge) => (
+          recharge.status === 'rejected' ? (
+            <Alert key={recharge.id} className="animate-fade-in bg-green-100 border-green-300">
+              <XCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription>
+                <p className="font-semibold text-red-600">
+                  Recharge Request Rejected
+                </p>
+                <p className="text-sm text-red-700 mt-1">
+                  Please pay the amount before requesting. Product: {recharge.products?.name} (ETB {recharge.amount})
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : recharge.status === 'approved' ? (
+            <Alert key={recharge.id} className="animate-fade-in bg-green-50 border-green-300">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription>
+                <p className="font-semibold text-green-700">
+                  Congratulations! 🎉
+                </p>
+                <p className="text-sm text-green-600 mt-1">
+                  Your product is now working! {recharge.products?.name} (ETB {recharge.amount}) is active and generating income.
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : null
+        ))}
 
         <div className="grid grid-cols-2 gap-4 animate-fade-in">
           <Card className="shadow-card">
