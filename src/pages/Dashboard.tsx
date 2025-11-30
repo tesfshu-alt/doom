@@ -260,26 +260,32 @@ const Dashboard = () => {
         {/* Recharge Status Messages */}
         {recentRecharges?.map((recharge) => (
           recharge.status === 'rejected' ? (
-            <Alert key={recharge.id} className="animate-fade-in bg-green-100 border-green-300">
-              <XCircle className="h-4 w-4 text-red-600" />
+            <Alert key={recharge.id} className="animate-fade-in bg-gradient-to-r from-slate-900 to-slate-800 border-2 border-red-500 shadow-elevated">
+              <XCircle className="h-5 w-5 text-red-500" />
               <AlertDescription>
-                <p className="font-semibold text-red-600">
-                  Recharge Request Rejected
+                <p className="font-bold text-red-400 text-base">
+                  ⚠️ Recharge Request Rejected
                 </p>
-                <p className="text-sm text-red-700 mt-1">
-                  Please pay the amount before requesting. Product: {recharge.products?.name} (ETB {recharge.amount})
+                <p className="text-sm text-slate-200 mt-2 leading-relaxed">
+                  Please pay the amount before requesting.
+                </p>
+                <p className="text-xs text-slate-300 mt-1 font-medium">
+                  Product: {recharge.products?.name} • ETB {recharge.amount}
                 </p>
               </AlertDescription>
             </Alert>
           ) : recharge.status === 'approved' ? (
-            <Alert key={recharge.id} className="animate-fade-in bg-green-50 border-green-300">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+            <Alert key={recharge.id} className="animate-fade-in bg-gradient-to-r from-blue-950 to-blue-900 border-2 border-blue-400 shadow-elevated">
+              <CheckCircle className="h-5 w-5 text-blue-400" />
               <AlertDescription>
-                <p className="font-semibold text-green-700">
-                  Congratulations! 🎉
+                <p className="font-bold text-blue-300 text-base">
+                  🎉 Congratulations!
                 </p>
-                <p className="text-sm text-green-600 mt-1">
-                  Your product is now working! {recharge.products?.name} (ETB {recharge.amount}) is active and generating income.
+                <p className="text-sm text-slate-100 mt-2 leading-relaxed">
+                  Your product is now working and generating income!
+                </p>
+                <p className="text-xs text-blue-200 mt-1 font-medium">
+                  {recharge.products?.name} • ETB {recharge.amount}
                 </p>
               </AlertDescription>
             </Alert>
