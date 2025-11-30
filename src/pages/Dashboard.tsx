@@ -126,28 +126,28 @@ const Dashboard = () => {
       label: "Products",
       description: "View all packages",
       path: "/products",
-      gradient: "from-primary to-secondary",
+      gradient: "from-slate-900 to-blue-900",
     },
     {
       icon: Users,
       label: "Team",
       description: "View referrals",
       path: "/team",
-      gradient: "from-secondary to-primary",
+      gradient: "from-blue-950 to-slate-900",
     },
     {
       icon: User,
       label: "My Account",
       description: "Profile & settings",
       path: "/mine",
-      gradient: "from-accent to-primary",
+      gradient: "from-slate-800 to-blue-800",
     },
     {
       icon: CreditCard,
       label: "Recharge",
       description: "Add funds",
       path: "/recharge",
-      gradient: "from-primary to-accent",
+      gradient: "from-blue-900 to-cyan-900",
     },
   ];
 
@@ -162,15 +162,15 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Phone: {profile?.phone_number}</p>
         </div>
 
-        <Card className="shadow-elevated bg-gradient-primary animate-fade-in">
+        <Card className="shadow-elevated bg-gradient-to-br from-slate-900 via-blue-950 to-slate-800 animate-fade-in border-2 border-blue-500/30">
           <CardContent className="p-6 text-center space-y-2">
-            <p className="text-sm text-white/80">Available Balance</p>
+            <p className="text-sm text-blue-300/90">Available Balance</p>
             <p className="text-4xl font-bold text-white">ETB {(availableBalance || 0).toFixed(2)}</p>
             <Button 
               variant="secondary" 
               size="sm"
               onClick={() => navigate('/mine/records')}
-              className="mt-2"
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
             >
               View Transaction History
             </Button>
@@ -179,77 +179,78 @@ const Dashboard = () => {
 
         {/* Withdrawal Eligibility Alert */}
         {(availableBalance || 0) < 300 ? (
-          <Card className="animate-fade-in border-primary/50 shadow-card">
+          <Card className="animate-fade-in border-2 border-blue-500/40 shadow-elevated bg-gradient-to-br from-slate-900 to-slate-800">
             <CardContent className="p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-primary" />
-                    <p className="font-semibold text-foreground">
+                    <AlertCircle className="h-5 w-5 text-blue-400" />
+                    <p className="font-bold text-white">
                       Withdrawal Progress
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-blue-200">
                     ETB {(availableBalance || 0).toFixed(2)} / ETB 300.00
                   </p>
                 </div>
                 <Button 
                   size="sm" 
                   onClick={() => navigate('/products')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
                 >
                   Buy Products
                 </Button>
               </div>
               <div className="space-y-2">
-                <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted/30 border border-primary/20">
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-700 border border-blue-500/30">
                   <div 
-                    className="h-full bg-gradient-to-r from-accent to-primary transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-500"
                     style={{ width: `${((availableBalance || 0) / 300) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs font-medium text-foreground text-center">
+                <p className="text-xs font-medium text-blue-200 text-center">
                   Need ETB {(300 - (availableBalance || 0)).toFixed(2)} more to reach minimum withdrawal
                 </p>
               </div>
             </CardContent>
           </Card>
         ) : (activeProducts?.length ?? 0) === 0 ? (
-          <Alert className="animate-fade-in border-accent/50 bg-accent/5">
-            <AlertCircle className="h-4 w-4 text-accent" />
+          <Alert className="animate-fade-in border-2 border-amber-500/50 bg-gradient-to-r from-slate-900 to-slate-800 shadow-elevated">
+            <AlertCircle className="h-5 w-5 text-amber-400" />
             <AlertDescription className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-foreground">
+                <p className="font-bold text-white">
                   Purchase a product to withdraw
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-slate-200 mt-1">
                   You have ETB {(availableBalance || 0).toFixed(2)} available
                 </p>
               </div>
               <Button 
                 size="sm" 
                 onClick={() => navigate('/products')}
-                className="ml-2"
+                className="ml-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
               >
                 View Products
               </Button>
             </AlertDescription>
           </Alert>
         ) : (
-          <Alert className="animate-fade-in border-secondary/50 bg-secondary/5">
-            <CheckCircle className="h-4 w-4 text-secondary" />
+          <Alert className="animate-fade-in border-2 border-green-500/50 bg-gradient-to-r from-slate-900 to-slate-800 shadow-elevated">
+            <CheckCircle className="h-5 w-5 text-green-400" />
             <AlertDescription className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-foreground">
+                <p className="font-bold text-white">
                   You can now withdraw!
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-slate-200 mt-1">
                   Available: ETB {(availableBalance || 0).toFixed(2)}
                 </p>
               </div>
               <Button 
                 size="sm" 
                 onClick={() => navigate('/withdrawal')}
-                className="ml-2"
+                className="ml-2 bg-green-600 hover:bg-green-700 text-white border-0"
               >
                 Withdraw Now
               </Button>
@@ -293,23 +294,23 @@ const Dashboard = () => {
         ))}
 
         <div className="grid grid-cols-2 gap-4 animate-fade-in">
-          <Card className="shadow-card">
+          <Card className="shadow-elevated bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-blue-500/30">
             <CardContent className="p-4 space-y-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Wallet className="h-4 w-4" />
-                <span className="text-sm">Total Investment</span>
+              <div className="flex items-center gap-2 text-blue-300">
+                <Wallet className="h-5 w-5" />
+                <span className="text-sm font-medium">Total Investment</span>
               </div>
-              <p className="text-2xl font-bold text-primary">ETB {totalInvestment.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-white">ETB {totalInvestment.toFixed(2)}</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-card">
+          <Card className="shadow-elevated bg-gradient-to-br from-blue-950 to-slate-900 border-2 border-cyan-500/30">
             <CardContent className="p-4 space-y-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm">Daily Income</span>
+              <div className="flex items-center gap-2 text-cyan-300">
+                <TrendingUp className="h-5 w-5" />
+                <span className="text-sm font-medium">Daily Income</span>
               </div>
-              <p className="text-2xl font-bold text-secondary">ETB {totalDailyIncome.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-white">ETB {totalDailyIncome.toFixed(2)}</p>
             </CardContent>
           </Card>
         </div>
@@ -322,15 +323,15 @@ const Dashboard = () => {
               return (
                 <Card
                   key={shortcut.path}
-                  className="cursor-pointer hover:shadow-elevated transition-all duration-300 overflow-hidden group shadow-card"
+                  className="cursor-pointer hover:shadow-elevated transition-all duration-300 overflow-hidden group shadow-elevated border-2 border-blue-500/20 hover:border-blue-400/40"
                   onClick={() => navigate(shortcut.path)}
                 >
                   <CardContent className="p-0">
-                    <div className={`bg-gradient-to-br ${shortcut.gradient} p-4 h-24 flex flex-col justify-between`}>
-                      <Icon className="h-8 w-8 text-white" />
+                    <div className={`bg-gradient-to-br ${shortcut.gradient} p-4 h-24 flex flex-col justify-between border-b-2 border-blue-400/30`}>
+                      <Icon className="h-8 w-8 text-blue-200 group-hover:text-white transition-colors" />
                       <div>
-                        <p className="font-semibold text-white text-sm">{shortcut.label}</p>
-                        <p className="text-xs text-white/80">{shortcut.description}</p>
+                        <p className="font-bold text-white text-sm">{shortcut.label}</p>
+                        <p className="text-xs text-blue-200">{shortcut.description}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -341,22 +342,23 @@ const Dashboard = () => {
         </div>
 
         {telegramContact && (
-          <Card className="shadow-card animate-fade-in bg-gradient-to-br from-primary to-secondary">
+          <Card className="shadow-elevated animate-fade-in bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-blue-500/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-3 rounded-full">
-                    <MessageCircle className="h-6 w-6 text-white" />
+                  <div className="bg-blue-500/20 p-3 rounded-full border border-blue-400/30">
+                    <MessageCircle className="h-6 w-6 text-blue-300" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">Join Our Telegram</h3>
-                    <p className="text-sm text-white/80">{telegramContact.value}</p>
+                    <h3 className="font-bold text-white">Join Our Telegram</h3>
+                    <p className="text-sm text-blue-200">{telegramContact.value}</p>
                   </div>
                 </div>
                 <Button 
                   variant="secondary"
                   size="sm"
                   onClick={() => window.open(telegramContact.link, '_blank')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
                 >
                   Join Now
                 </Button>
