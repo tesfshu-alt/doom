@@ -80,6 +80,23 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
+  const { data: recentWithdrawals } = useQuery({
+    queryKey: ['recent-withdrawals', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('*, bank_accounts(account_name, bank_name)')
+        .eq('user_id', user?.id)
+        .in('status', ['rejected', 'approved'])
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   // Set up real-time subscription for user_products
   useEffect(() => {
     if (!user?.id) return;
@@ -287,6 +304,41 @@ const Dashboard = () => {
                 </p>
                 <p className="text-xs text-blue-200 mt-1 font-medium">
                   {recharge.products?.name} • ETB {recharge.amount}
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : null
+        ))}
+
+        {/* Withdrawal Status Messages */}
+        {recentWithdrawals?.map((withdrawal) => (
+          withdrawal.status === 'rejected' ? (
+            <Alert key={withdrawal.id} className="animate-fade-in bg-gradient-to-r from-slate-900 to-slate-800 border-2 border-red-500 shadow-elevated">
+              <XCircle className="h-5 w-5 text-red-500" />
+              <AlertDescription>
+                <p className="font-bold text-red-400 text-base">
+                  ⚠️ Withdrawal Request Rejected
+                </p>
+                <p className="text-sm text-slate-200 mt-2 leading-relaxed">
+                  Dear user, you didn't invest or at least 3 of your team members must invest to be eligible for free withdrawal (withdrawal without investment).
+                </p>
+                <p className="text-xs text-slate-300 mt-1 font-medium">
+                  ETB {withdrawal.amount}
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : withdrawal.status === 'approved' ? (
+            <Alert key={withdrawal.id} className="animate-fade-in bg-gradient-to-r from-blue-950 to-blue-900 border-2 border-blue-400 shadow-elevated">
+              <CheckCircle className="h-5 w-5 text-blue-400" />
+              <AlertDescription>
+                <p className="font-bold text-blue-300 text-base">
+                  🎉 Congratulations!
+                </p>
+                <p className="text-sm text-slate-100 mt-2 leading-relaxed">
+                  Your withdrawal request has been approved! The amount will be transferred to your account shortly.
+                </p>
+                <p className="text-xs text-blue-200 mt-1 font-medium">
+                  ETB {withdrawal.amount} • {withdrawal.bank_accounts?.bank_name}
                 </p>
               </AlertDescription>
             </Alert>
