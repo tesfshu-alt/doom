@@ -19,8 +19,7 @@ const Recharge = () => {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get('product');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [transactionId, setTransactionId] = useState("");
-  const [payerAccountName, setPayerAccountName] = useState("");
+  const [payerAccountNumber, setPayerAccountNumber] = useState("");
 
   const { data: product } = useQuery({
     queryKey: ['product', productId],
@@ -52,11 +51,34 @@ const Recharge = () => {
     },
   });
 
+  const { data: userBankAccount } = useQuery({
+    queryKey: ['userBankAccount', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from('bank_accounts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      // Auto-fill the account number when bank account is loaded
+      if (data && !payerAccountNumber) {
+        setPayerAccountNumber(data.account_number);
+      }
+      
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const createRechargeMutation = useMutation({
     mutationFn: async () => {
       if (!product || !user) throw new Error('Missing data');
-      if (!transactionId.trim()) throw new Error('Please enter transaction ID');
-      if (!payerAccountName.trim()) throw new Error('Please enter account owner name');
+      if (!payerAccountNumber.trim()) throw new Error('Please enter payer account number');
 
       const { error } = await supabase
         .from('recharges')
@@ -65,8 +87,7 @@ const Recharge = () => {
           product_id: product.id,
           amount: product.price,
           status: 'pending',
-          transaction_id: transactionId.trim(),
-          payer_account_name: payerAccountName.trim(),
+          payer_account_name: payerAccountNumber.trim(),
         });
 
       if (error) throw error;
@@ -228,7 +249,7 @@ const Recharge = () => {
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>Enter your transaction ID and account owner name</p>
+                <p>Confirm your payer account number</p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -241,38 +262,29 @@ const Recharge = () => {
         <Card className="shadow-card">
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="transaction-id" className="text-base font-semibold">
-                Transaction ID *
+              <Label htmlFor="payer-account" className="text-base font-semibold">
+                Payer Account Number *
               </Label>
               <Input
-                id="transaction-id"
+                id="payer-account"
                 type="text"
-                value={transactionId}
-                onChange={(e) => setTransactionId(e.target.value)}
-                placeholder="Enter your transaction ID"
+                value={payerAccountNumber}
+                onChange={(e) => setPayerAccountNumber(e.target.value)}
+                placeholder="Enter payer account number"
                 required
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payer-name" className="text-base font-semibold">
-                Account Owner Name *
-              </Label>
-              <Input
-                id="payer-name"
-                type="text"
-                value={payerAccountName}
-                onChange={(e) => setPayerAccountName(e.target.value)}
-                placeholder="Name used for payment"
-                required
-              />
+              {userBankAccount && (
+                <p className="text-xs text-muted-foreground">
+                  Auto-filled from your saved bank account. You can edit if needed.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || !transactionId.trim() || !payerAccountName.trim()}
+          disabled={isSubmitting || !payerAccountNumber.trim()}
           className="w-full h-12 text-lg"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Payment Request'}
