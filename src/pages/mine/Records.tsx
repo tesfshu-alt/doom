@@ -252,8 +252,13 @@ const Records = () => {
                               {withdrawal.bank_accounts?.bank_name} - {withdrawal.bank_accounts?.account_number}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}
+                              <span className="font-medium">Request:</span> {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}
                             </p>
+                            {withdrawal.approved_at && (
+                              <p className="text-sm text-muted-foreground">
+                                <span className="font-medium">Approved:</span> {format(new Date(withdrawal.approved_at), 'MMM dd, yyyy HH:mm')}
+                              </p>
+                            )}
                             {getStatusBadge(withdrawal.status)}
                           </div>
                         </div>
