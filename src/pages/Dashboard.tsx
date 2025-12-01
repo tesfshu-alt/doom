@@ -8,6 +8,7 @@ import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, Chec
 import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import BonusCodeClaim from "@/components/BonusCodeClaim";
 
@@ -325,6 +326,9 @@ const Dashboard = () => {
                 <p className="text-xs text-slate-300 mt-1 font-medium">
                   ETB {withdrawal.amount}
                 </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Requested: {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')} • Reviewed: {withdrawal.approved_at ? format(new Date(withdrawal.approved_at), 'MMM dd, yyyy HH:mm') : 'Pending'}
+                </p>
               </AlertDescription>
             </Alert>
           ) : withdrawal.status === 'approved' ? (
@@ -339,6 +343,9 @@ const Dashboard = () => {
                 </p>
                 <p className="text-xs text-blue-200 mt-1 font-medium">
                   ETB {withdrawal.amount} • {withdrawal.bank_accounts?.bank_name}
+                </p>
+                <p className="text-xs text-blue-300 mt-1">
+                  Requested: {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')} • Approved: {withdrawal.approved_at ? format(new Date(withdrawal.approved_at), 'MMM dd, yyyy HH:mm') : 'N/A'}
                 </p>
               </AlertDescription>
             </Alert>
