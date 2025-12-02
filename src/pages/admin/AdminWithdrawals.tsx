@@ -44,9 +44,27 @@ const AdminWithdrawals = () => {
         .select('id, phone_number')
         .in('id', userIds);
       
+      // Fetch user types from most recent approved recharge
+      const { data: recharges } = await supabase
+        .from('recharges')
+        .select('user_id, user_type, approved_at')
+        .eq('status', 'approved')
+        .in('user_id', userIds)
+        .not('user_type', 'is', null)
+        .order('approved_at', { ascending: false });
+      
+      // Get the most recent user_type for each user
+      const userTypes = new Map();
+      recharges?.forEach(recharge => {
+        if (!userTypes.has(recharge.user_id)) {
+          userTypes.set(recharge.user_id, recharge.user_type);
+        }
+      });
+      
       return data?.map(withdrawal => ({
         ...withdrawal,
-        profile: profiles?.find(p => p.id === withdrawal.user_id)
+        profile: profiles?.find(p => p.id === withdrawal.user_id),
+        user_type: userTypes.get(withdrawal.user_id)
       }));
     },
   });
@@ -150,6 +168,11 @@ const AdminWithdrawals = () => {
                       {withdrawal.profile?.phone_number || 'Unknown User'}
                     </p>
                     <Badge>Pending</Badge>
+                    {withdrawal.user_type && (
+                      <Badge variant={withdrawal.user_type === 'investor' ? 'default' : 'secondary'}>
+                        {withdrawal.user_type.charAt(0).toUpperCase() + withdrawal.user_type.slice(1)}
+                      </Badge>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">
