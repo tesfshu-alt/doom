@@ -39,19 +39,24 @@ const Team = () => {
       
       if (error) throw error;
       
-      // For each referral, check if they have an approved recharge
+      // For each referral, check investment status
       const referralsWithStatus = await Promise.all(
         data.map(async (referral) => {
-          const { data: rechargeData } = await supabase
-            .from('recharges')
-            .select('id')
+          const { data: investmentData } = await supabase
+            .from('referral_investments')
+            .select('total_invested, bonus_credited')
             .eq('user_id', referral.id)
-            .eq('status', 'approved')
-            .limit(1);
+            .eq('referred_by', user?.id)
+            .maybeSingle();
+          
+          const totalInvested = investmentData?.total_invested || 0;
+          const meetsMinimum = totalInvested >= 500;
           
           return {
             ...referral,
-            hasInvested: (rechargeData?.length || 0) > 0,
+            hasInvested: meetsMinimum,
+            totalInvested,
+            investmentProgress: Math.min((totalInvested / 500) * 100, 100),
           };
         })
       );
@@ -214,12 +219,12 @@ const Team = () => {
                     
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Investment Status</span>
+                        <span className="text-muted-foreground">Investment Status (Min 500 ETB)</span>
                         <span className={referral.hasInvested ? "text-green-500 font-semibold" : "text-muted-foreground"}>
-                          {referral.hasInvested ? "Invested" : "Not Yet Invested"}
+                          {referral.hasInvested ? "Eligible" : `ETB ${referral.totalInvested || 0}/500`}
                         </span>
                       </div>
-                      <Progress value={referral.hasInvested ? 100 : 0} className="h-2" />
+                      <Progress value={referral.investmentProgress || 0} className="h-2" />
                     </div>
                   </CardContent>
                 </Card>
