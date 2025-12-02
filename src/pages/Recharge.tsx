@@ -10,6 +10,7 @@ import { Copy, ArrowLeft, CheckCircle, Upload, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { compressImage, formatFileSize } from "@/lib/imageCompression";
 
 const Recharge = () => {
   const { user } = useAuth();
@@ -23,6 +24,8 @@ const Recharge = () => {
   const [buyerName, setBuyerName] = useState("");
   const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
 
   const { data: product } = useQuery({
     queryKey: ['product', productId],
@@ -147,21 +150,69 @@ const Recharge = () => {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
+    if (!file) return;
+
+    try {
+      setIsCompressing(true);
+      const originalSize = file.size;
+
+      // Check if file is too large
+      if (originalSize > 10 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: "File size must be less than 5MB",
+          description: "File size must be less than 10MB",
           variant: "destructive",
         });
+        setIsCompressing(false);
         return;
       }
+
+      // Compress the image
+      const compressedBlob = await compressImage(file, 1200, 1200, 0.8);
+      const compressedFile = new File([compressedBlob], file.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+      });
+
+      const compressedSize = compressedFile.size;
+      
+      // Store compression info
+      setCompressionInfo({ original: originalSize, compressed: compressedSize });
+      
+      // Show success message if compression was significant
+      if (originalSize > compressedSize) {
+        const savedPercent = Math.round(((originalSize - compressedSize) / originalSize) * 100);
+        toast({
+          title: "Image compressed",
+          description: `Reduced by ${savedPercent}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)})`,
+        });
+      }
+
+      setPaymentScreenshot(compressedFile);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result as string);
+        setIsCompressing(false);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      toast({
+        title: "Compression failed",
+        description: "Using original image instead",
+        variant: "destructive",
+      });
+      
+      // Use original file if compression fails
       setPaymentScreenshot(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setScreenshotPreview(reader.result as string);
+        setIsCompressing(false);
       };
       reader.readAsDataURL(file);
     }
@@ -342,8 +393,20 @@ const Recharge = () => {
               <Label htmlFor="screenshot" className="text-base font-semibold">
                 Payment Screenshot *
               </Label>
+              {compressionInfo && (
+                <p className="text-xs text-muted-foreground">
+                  Compressed: {formatFileSize(compressionInfo.original)} → {formatFileSize(compressionInfo.compressed)}
+                </p>
+              )}
               <div className="space-y-3">
-                {screenshotPreview ? (
+                {isCompressing ? (
+                  <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg bg-muted/50">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-2"></div>
+                      <p className="text-sm text-muted-foreground">Compressing image...</p>
+                    </div>
+                  </div>
+                ) : screenshotPreview ? (
                   <div className="relative">
                     <img
                       src={screenshotPreview}
