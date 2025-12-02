@@ -175,6 +175,30 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -259,6 +283,7 @@ export type Database = {
           status: Database["public"]["Enums"]["recharge_status"]
           transaction_id: string | null
           user_id: string
+          user_type: string | null
         }
         Insert: {
           amount: number
@@ -272,6 +297,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["recharge_status"]
           transaction_id?: string | null
           user_id: string
+          user_type?: string | null
         }
         Update: {
           amount?: number
@@ -285,6 +311,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["recharge_status"]
           transaction_id?: string | null
           user_id?: string
+          user_type?: string | null
         }
         Relationships: [
           {
@@ -295,6 +322,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referral_investments: {
+        Row: {
+          bonus_credited: boolean | null
+          created_at: string | null
+          id: string
+          referred_by: string
+          total_invested: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bonus_credited?: boolean | null
+          created_at?: string | null
+          id?: string
+          referred_by: string
+          total_invested?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bonus_credited?: boolean | null
+          created_at?: string | null
+          id?: string
+          referred_by?: string
+          total_invested?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       referral_settings: {
         Row: {

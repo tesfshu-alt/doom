@@ -6,16 +6,24 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Package, Users, User, CreditCard, Wallet, TrendingUp, AlertCircle, CheckCircle, MessageCircle, XCircle } from "lucide-react";
 import Layout from "@/components/Layout";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import BonusCodeClaim from "@/components/BonusCodeClaim";
+import WelcomePopup from "@/components/WelcomePopup";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setShowWelcomePopup(true);
+    }
+  }, [user]);
 
   const { data: profile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -173,7 +181,8 @@ const Dashboard = () => {
   const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
 
   return (
-    <Layout>
+    <>
+      <Layout>
       <div className="max-w-lg mx-auto p-4 space-y-6">
         <div className="space-y-2 animate-fade-in">
           <h1 className="text-2xl font-bold">Welcome Back!</h1>
@@ -456,7 +465,12 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-    </Layout>
+      </Layout>
+      <WelcomePopup 
+        open={showWelcomePopup} 
+        onClose={() => setShowWelcomePopup(false)} 
+      />
+    </>
   );
 };
 

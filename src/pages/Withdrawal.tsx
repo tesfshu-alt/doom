@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet, ArrowLeft, AlertCircle } from "lucide-react";
+import { Wallet, ArrowLeft, AlertCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { useQuery } from "@tanstack/react-query";
+import { toZonedTime } from "date-fns-tz";
 
 const Withdrawal = () => {
   const { user } = useAuth();
@@ -66,10 +67,45 @@ const Withdrawal = () => {
 
   const hasProducts = (userProducts?.length ?? 0) > 0;
 
+  // Check for pending withdrawals
+  const { data: pendingWithdrawals } = useQuery({
+    queryKey: ['pendingWithdrawals', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('status', 'pending')
+        .limit(1);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const hasPendingWithdrawal = (pendingWithdrawals?.length ?? 0) > 0;
+
+  const checkWithdrawalTime = () => {
+    const now = new Date();
+    const eatTime = toZonedTime(now, 'Africa/Addis_Ababa');
+    const hours = eatTime.getHours();
+    return hours >= 9 && hours < 17; // 9 AM to 5 PM
+  };
+
+  const isWithdrawalTimeAllowed = checkWithdrawalTime();
+
   const withdrawalMutation = useMutation({
     mutationFn: async () => {
       const withdrawalAmount = parseFloat(amount);
       
+      if (!isWithdrawalTimeAllowed) {
+        throw new Error('Withdrawal requests are only allowed between 9 AM and 5 PM (Ethiopian Time)');
+      }
+
+      if (hasPendingWithdrawal) {
+        throw new Error('You have a pending withdrawal request. Please wait for it to be processed before submitting a new request.');
+      }
+
       if (!selectedBankId) {
         throw new Error('Please select a bank account');
       }
@@ -155,6 +191,24 @@ const Withdrawal = () => {
             <p className="text-3xl font-bold text-primary">ETB {availableBalance.toFixed(2)}</p>
           </CardContent>
         </Card>
+
+        {hasPendingWithdrawal && (
+          <Alert>
+            <Clock className="h-4 w-4" />
+            <AlertDescription>
+              You have a pending withdrawal request. Please wait for it to be processed before submitting a new request.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!isWithdrawalTimeAllowed && (
+          <Alert>
+            <Clock className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Note:</strong> Withdrawal requests are only accepted between 9:00 AM and 5:00 PM (Ethiopian Time). Recharge is available 24/7.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {bankAccounts && bankAccounts.length === 0 ? (
           <Alert>
@@ -243,7 +297,7 @@ const Withdrawal = () => {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < 300 || !hasProducts}
+                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < 300 || !hasProducts || hasPendingWithdrawal || !isWithdrawalTimeAllowed}
                 >
                   {withdrawalMutation.isPending ? 'Submitting...' : 'Submit Withdrawal Request'}
                 </Button>

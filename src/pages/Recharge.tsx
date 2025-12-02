@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, ArrowLeft, CheckCircle } from "lucide-react";
+import { Copy, ArrowLeft, CheckCircle, Upload, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,9 @@ const Recharge = () => {
   const productId = searchParams.get('product');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [payerAccountNumber, setPayerAccountNumber] = useState("");
+  const [buyerName, setBuyerName] = useState("");
+  const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
 
   const { data: product } = useQuery({
     queryKey: ['product', productId],
@@ -79,6 +82,22 @@ const Recharge = () => {
     mutationFn: async () => {
       if (!product || !user) throw new Error('Missing data');
       if (!payerAccountNumber.trim()) throw new Error('Please enter payer account number');
+      if (!buyerName.trim()) throw new Error('Please enter buyer name');
+      if (!paymentScreenshot) throw new Error('Please upload payment screenshot');
+
+      // Upload screenshot to storage
+      const fileExt = paymentScreenshot.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, paymentScreenshot);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
 
       const { error } = await supabase
         .from('recharges')
@@ -87,7 +106,8 @@ const Recharge = () => {
           product_id: product.id,
           amount: product.price,
           status: 'pending',
-          payer_account_name: payerAccountNumber.trim(),
+          payer_account_name: `${buyerName.trim()} (${payerAccountNumber.trim()})`,
+          payment_proof_url: publicUrl,
         });
 
       if (error) throw error;
@@ -98,6 +118,10 @@ const Recharge = () => {
         title: "Success!",
         description: "Your recharge request has been submitted. Please wait for admin approval.",
       });
+      setBuyerName("");
+      setPayerAccountNumber("");
+      setPaymentScreenshot(null);
+      setScreenshotPreview(null);
       navigate('/');
     },
     onError: (error) => {
@@ -121,6 +145,26 @@ const Recharge = () => {
       title: "Copied!",
       description: `${label} copied to clipboard`,
     });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "File size must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setPaymentScreenshot(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (!product) {
@@ -262,6 +306,20 @@ const Recharge = () => {
         <Card className="shadow-card">
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="buyer-name" className="text-base font-semibold">
+                Buyer Name *
+              </Label>
+              <Input
+                id="buyer-name"
+                type="text"
+                value={buyerName}
+                onChange={(e) => setBuyerName(e.target.value)}
+                placeholder="Enter buyer name"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="payer-account" className="text-base font-semibold">
                 Payer Account Number *
               </Label>
@@ -279,12 +337,62 @@ const Recharge = () => {
                 </p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="screenshot" className="text-base font-semibold">
+                Payment Screenshot *
+              </Label>
+              <div className="space-y-3">
+                {screenshotPreview ? (
+                  <div className="relative">
+                    <img
+                      src={screenshotPreview}
+                      alt="Payment screenshot"
+                      className="w-full h-48 object-cover rounded-lg border-2 border-primary/20"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setPaymentScreenshot(null);
+                        setScreenshotPreview(null);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="screenshot"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold">Click to upload</span> payment screenshot
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
+                    </div>
+                  </label>
+                )}
+                <Input
+                  id="screenshot"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  required={!paymentScreenshot}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || !payerAccountNumber.trim()}
+          disabled={isSubmitting || !payerAccountNumber.trim() || !buyerName.trim() || !paymentScreenshot}
           className="w-full h-12 text-lg"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Payment Request'}

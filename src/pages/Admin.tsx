@@ -25,6 +25,8 @@ import AdminCustomerService from "./admin/AdminCustomerService";
 import AdminPasswordReset from "./admin/AdminPasswordReset";
 import AdminBonusCodes from "./admin/AdminBonusCodes";
 import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
+import AdminPlatformSettings from "./admin/AdminPlatformSettings";
+import RechargeApprovalCard from "@/components/RechargeApprovalCard";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
   const { data: userRecharges } = useQuery({
@@ -230,18 +232,19 @@ const Admin = () => {
   });
 
   const approveMutation = useMutation({
-    mutationFn: async (rechargeId: string) => {
+    mutationFn: async ({ rechargeId, userType }: { rechargeId: string; userType: 'promoter' | 'investor' }) => {
       const recharge = pendingRecharges?.find(r => r.id === rechargeId);
       if (!recharge || !recharge.products) throw new Error('Recharge not found');
 
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + recharge.products.validity_days);
 
-      // Update recharge status
+      // Update recharge status with user_type
       const { error: rechargeError } = await supabase.from('recharges').update({ 
         status: 'approved',
         approved_at: new Date().toISOString(),
         approved_by: user?.id,
+        user_type: userType,
       }).eq('id', rechargeId);
 
       if (rechargeError) throw rechargeError;
@@ -284,53 +287,82 @@ const Admin = () => {
           .single();
 
         if (profile?.referred_by) {
-          // Get referral settings
-          const { data: referralSettings } = await supabase
-            .from('referral_settings')
+          // Check if referred user has invested at least 500 ETB
+          const { data: referralInvestment } = await supabase
+            .from('referral_investments')
             .select('*')
-            .single();
+            .eq('user_id', recharge.user_id)
+            .eq('referred_by', profile.referred_by)
+            .maybeSingle();
 
-          if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
-            // Calculate 35% of the purchase amount as referral bonus (1st level)
-            const bonusAmount = (recharge.amount * referralSettings.bonus_amount) / 100;
-            
-            // Credit referral bonus to the direct referrer (1st level)
-            const { error: bonusError } = await supabase
-              .from('transactions')
+          const totalInvested = (referralInvestment?.total_invested || 0) + recharge.amount;
+
+          // Update or create referral investment record
+          if (referralInvestment) {
+            await supabase
+              .from('referral_investments')
+              .update({ total_invested: totalInvested })
+              .eq('id', referralInvestment.id);
+          } else {
+            await supabase
+              .from('referral_investments')
               .insert({
-                user_id: profile.referred_by,
-                amount: bonusAmount,
-                type: 'referral_bonus',
-                description: `Referral bonus (${referralSettings.bonus_amount}%) for inviting new user`,
+                user_id: recharge.user_id,
+                referred_by: profile.referred_by,
+                total_invested: totalInvested,
+                bonus_credited: false,
               });
+          }
 
-            if (bonusError) {
-              console.error('Error crediting referral bonus:', bonusError);
-            }
-
-            // Check for 2nd level referral (referrer's referrer)
-            const { data: referrerProfile } = await supabase
-              .from('profiles')
-              .select('referred_by')
-              .eq('id', profile.referred_by)
+          // Only credit bonus if total investment is at least 500 ETB and bonus not yet credited
+          if (totalInvested >= 500 && !referralInvestment?.bonus_credited) {
+            // Get referral settings
+            const { data: referralSettings } = await supabase
+              .from('referral_settings')
+              .select('*')
               .single();
 
-            if (referrerProfile?.referred_by) {
-              // Calculate 3% bonus for 2nd level referrer
-              const secondLevelBonus = (recharge.amount * 3) / 100;
+            if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
+              // Calculate bonus based on total invested amount (not just current recharge)
+              const bonusAmount = (totalInvested * referralSettings.bonus_amount) / 100;
               
-              // Credit 2nd level referral bonus
-              const { error: secondLevelError } = await supabase
+              // Credit referral bonus to the direct referrer (1st level)
+              await supabase
                 .from('transactions')
                 .insert({
-                  user_id: referrerProfile.referred_by,
-                  amount: secondLevelBonus,
+                  user_id: profile.referred_by,
+                  amount: bonusAmount,
                   type: 'referral_bonus',
-                  description: `2nd level referral bonus (3%) from indirect referral`,
+                  description: `Referral bonus (${referralSettings.bonus_amount}%) for inviting new user`,
                 });
 
-              if (secondLevelError) {
-                console.error('Error crediting 2nd level referral bonus:', secondLevelError);
+              // Mark bonus as credited
+              await supabase
+                .from('referral_investments')
+                .update({ bonus_credited: true })
+                .eq('user_id', recharge.user_id)
+                .eq('referred_by', profile.referred_by);
+
+              // Check for 2nd level referral (referrer's referrer)
+              const { data: referrerProfile } = await supabase
+                .from('profiles')
+                .select('referred_by')
+                .eq('id', profile.referred_by)
+                .single();
+
+              if (referrerProfile?.referred_by) {
+                // Calculate 3% bonus for 2nd level referrer
+                const secondLevelBonus = (totalInvested * 3) / 100;
+                
+                // Credit 2nd level referral bonus
+                await supabase
+                  .from('transactions')
+                  .insert({
+                    user_id: referrerProfile.referred_by,
+                    amount: secondLevelBonus,
+                    type: 'referral_bonus',
+                    description: `2nd level referral bonus (3%) from indirect referral`,
+                  });
               }
             }
           }
@@ -385,7 +417,7 @@ const Admin = () => {
 
         <Tabs defaultValue="recharges" className="space-y-4">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-11 min-w-[900px]">
+            <TabsList className="grid w-full grid-cols-12 min-w-[1000px]">
               <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
               <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
               <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
@@ -397,6 +429,7 @@ const Admin = () => {
               <TabsTrigger value="password" className="text-xs sm:text-sm">Password</TabsTrigger>
               <TabsTrigger value="support" className="text-xs sm:text-sm">Support</TabsTrigger>
               <TabsTrigger value="withdrawal-fee" className="text-xs sm:text-sm">W. Fee</TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs sm:text-sm">Settings</TabsTrigger>
             </TabsList>
           </div>
 
@@ -405,60 +438,13 @@ const Admin = () => {
               <h2 className="text-lg sm:text-xl font-bold">Pending Recharge Requests</h2>
               {pendingRecharges && pendingRecharges.length > 0 ? (
                 pendingRecharges.map((recharge) => (
-                  <Card key={recharge.id} className="shadow-card">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div className="space-y-2 flex-1 w-full">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-lg">{recharge.profile?.phone_number || 'Unknown User'}</p>
-                            <Badge>Pending</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{recharge.products?.name}</p>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Amount: </span>
-                              <span className="font-bold text-primary">ETB {recharge.amount}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Date: </span>
-                              <span>{format(new Date(recharge.created_at), 'MMM dd, yyyy HH:mm')}</span>
-                            </div>
-                          </div>
-                          {recharge.transaction_id && (
-                            <div className="mt-2 p-2 bg-muted rounded-md space-y-1">
-                              <div>
-                                <span className="text-xs text-muted-foreground">Transaction ID: </span>
-                                <span className="text-sm font-mono">{recharge.transaction_id}</span>
-                              </div>
-                              <div>
-                                <span className="text-xs text-muted-foreground">Payer Name: </span>
-                                <span className="text-sm">{recharge.payer_account_name}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-                          <Button 
-                            size="sm"
-                            className="flex-1 sm:flex-initial"
-                            onClick={() => approveMutation.mutate(recharge.id)}
-                            disabled={approveMutation.isPending || rejectMutation.isPending}
-                          >
-                            <Check className="h-4 w-4 mr-1" /> Approve
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            className="flex-1 sm:flex-initial"
-                            onClick={() => rejectMutation.mutate(recharge.id)}
-                            disabled={approveMutation.isPending || rejectMutation.isPending}
-                          >
-                            <X className="h-4 w-4 mr-1" /> Reject
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <RechargeApprovalCard
+                    key={recharge.id}
+                    recharge={recharge}
+                    onApprove={(rechargeId, userType) => approveMutation.mutate({ rechargeId, userType })}
+                    onReject={(rechargeId) => rejectMutation.mutate(rechargeId)}
+                    isLoading={approveMutation.isPending || rejectMutation.isPending}
+                  />
                 ))
               ) : (
                 <Card className="shadow-card">
@@ -547,6 +533,10 @@ const Admin = () => {
 
           <TabsContent value="withdrawal-fee" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminWithdrawalFee />
+          </TabsContent>
+
+          <TabsContent value="settings" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminPlatformSettings />
           </TabsContent>
         </Tabs>
       </div>
