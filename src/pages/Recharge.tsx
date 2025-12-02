@@ -11,6 +11,7 @@ import Layout from "@/components/Layout";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { compressImage, formatFileSize } from "@/lib/imageCompression";
+import { ImageCropper } from "@/components/ImageCropper";
 
 const Recharge = () => {
   const { user } = useAuth();
@@ -26,6 +27,8 @@ const Recharge = () => {
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const { data: product } = useQuery({
     queryKey: ['product', productId],
@@ -154,41 +157,54 @@ const Recharge = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check if file is too large
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "File size must be less than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Show cropper first
+    setPendingFile(file);
+    setShowCropper(true);
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    if (!pendingFile) return;
+
     try {
+      setShowCropper(false);
       setIsCompressing(true);
-      const originalSize = file.size;
+      
+      const originalSize = pendingFile.size;
+      const croppedSize = croppedBlob.size;
 
-      // Check if file is too large
-      if (originalSize > 10 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "File size must be less than 10MB",
-          variant: "destructive",
-        });
-        setIsCompressing(false);
-        return;
-      }
-
-      // Compress the image
-      const compressedBlob = await compressImage(file, 1200, 1200, 0.8);
-      const compressedFile = new File([compressedBlob], file.name, {
+      // Compress the cropped image
+      const croppedFile = new File([croppedBlob], pendingFile.name, {
         type: 'image/jpeg',
         lastModified: Date.now(),
       });
 
-      const compressedSize = compressedFile.size;
+      const compressedBlob = await compressImage(croppedFile, 1200, 1200, 0.8);
+      const compressedFile = new File([compressedBlob], pendingFile.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+      });
+
+      const finalSize = compressedFile.size;
       
       // Store compression info
-      setCompressionInfo({ original: originalSize, compressed: compressedSize });
+      setCompressionInfo({ original: originalSize, compressed: finalSize });
       
-      // Show success message if compression was significant
-      if (originalSize > compressedSize) {
-        const savedPercent = Math.round(((originalSize - compressedSize) / originalSize) * 100);
-        toast({
-          title: "Image compressed",
-          description: `Reduced by ${savedPercent}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)})`,
-        });
-      }
+      // Show success message
+      const savedPercent = Math.round(((originalSize - finalSize) / originalSize) * 100);
+      toast({
+        title: "Image optimized",
+        description: `Cropped and compressed - reduced by ${savedPercent}% (${formatFileSize(originalSize)} → ${formatFileSize(finalSize)})`,
+      });
 
       setPaymentScreenshot(compressedFile);
       
@@ -199,23 +215,22 @@ const Recharge = () => {
         setIsCompressing(false);
       };
       reader.readAsDataURL(compressedFile);
+      setPendingFile(null);
     } catch (error) {
-      console.error('Error compressing image:', error);
+      console.error('Error processing image:', error);
       toast({
-        title: "Compression failed",
-        description: "Using original image instead",
+        title: "Processing failed",
+        description: "Please try again",
         variant: "destructive",
       });
-      
-      // Use original file if compression fails
-      setPaymentScreenshot(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setScreenshotPreview(reader.result as string);
-        setIsCompressing(false);
-      };
-      reader.readAsDataURL(file);
+      setIsCompressing(false);
+      setPendingFile(null);
     }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setPendingFile(null);
   };
 
   if (!product) {
@@ -237,6 +252,15 @@ const Recharge = () => {
 
   return (
     <Layout>
+      {pendingFile && (
+        <ImageCropper
+          imageFile={pendingFile}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          open={showCropper}
+        />
+      )}
+      
       <div className="max-w-lg mx-auto p-4 space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
