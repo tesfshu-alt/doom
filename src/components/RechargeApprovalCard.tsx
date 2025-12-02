@@ -3,15 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Image as ImageIcon } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { format } from "date-fns";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface RechargeApprovalCardProps {
   recharge: any;
@@ -51,25 +44,13 @@ const RechargeApprovalCard = ({ recharge, onApprove, onReject, isLoading }: Rech
                 </div>
               </div>
             )}
-            {recharge.payment_proof_url && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    View Payment Screenshot
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                    <DialogTitle>Payment Screenshot</DialogTitle>
-                  </DialogHeader>
-                  <img
-                    src={recharge.payment_proof_url}
-                    alt="Payment proof"
-                    className="w-full h-auto rounded-lg"
-                  />
-                </DialogContent>
-              </Dialog>
+            {recharge.transaction_id && (
+              <div className="mt-2 p-2 bg-muted rounded-md border-l-4 border-primary">
+                <div>
+                  <span className="text-xs text-muted-foreground">Transaction ID: </span>
+                  <span className="text-sm font-mono font-semibold">{recharge.transaction_id}</span>
+                </div>
+              </div>
             )}
           </div>
           
