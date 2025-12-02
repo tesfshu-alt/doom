@@ -314,8 +314,8 @@ const Admin = () => {
               });
           }
 
-          // Only credit bonus if total investment is at least 500 ETB and bonus not yet credited
-          if (totalInvested >= 500 && !referralInvestment?.bonus_credited) {
+          // Only credit bonus if total investment is at least 500 ETB, bonus not yet credited, and user is approved as investor
+          if (totalInvested >= 500 && !referralInvestment?.bonus_credited && userType === 'investor') {
             // Get referral settings
             const { data: referralSettings } = await supabase
               .from('referral_settings')
