@@ -30,7 +30,7 @@ const AdminPlatformSettings = () => {
   const currentSettings = settings?.setting_value as any;
 
   const [enabled, setEnabled] = useState(currentSettings?.enabled ?? true);
-  const [title, setTitle] = useState(currentSettings?.title || 'Welcome to EthioMax');
+  const [title, setTitle] = useState(currentSettings?.title || 'Welcome to Doom');
   const [minWithdrawal, setMinWithdrawal] = useState(currentSettings?.minimum_withdrawal || 300);
   const [packagesInfo, setPackagesInfo] = useState(
     currentSettings?.packages_info || 'View our investment packages to start earning daily income.'
