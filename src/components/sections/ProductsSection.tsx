@@ -24,11 +24,7 @@ const ProductsSection = () => {
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
+      const { data, error } = await supabase.from('products').select('*').eq('is_active', true).order('sort_order');
       if (error) throw error;
       return data;
     },
@@ -54,85 +50,59 @@ const ProductsSection = () => {
 
   if (isLoading) {
     return (
-      <section id="products" className="py-8 px-4 max-w-lg mx-auto">
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6 space-y-3">
-                <div className="h-6 bg-muted rounded" />
-                <div className="h-4 bg-muted rounded w-2/3" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      <div className="p-4 max-w-lg mx-auto space-y-4">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="animate-pulse">
+            <CardContent className="p-6 space-y-3">
+              <div className="h-6 bg-muted rounded" />
+              <div className="h-4 bg-muted rounded w-2/3" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     );
   }
 
   return (
-    <section id="products" className="py-8 px-4 max-w-lg mx-auto space-y-6">
-      <div className="space-y-2 animate-fade-in">
-        <h2 className="text-2xl font-bold">Investment Products</h2>
-        <p className="text-muted-foreground">Choose a package that suits your goals</p>
+    <div className="p-4 max-w-lg mx-auto space-y-6 pb-20">
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold">Investment Products</h2>
+        <p className="text-sm text-muted-foreground">Choose a package that suits your goals</p>
       </div>
-
-      <Card className="shadow-elevated bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Calculator className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold">Earnings Calculator</p>
-              <p className="text-xs text-muted-foreground">Calculate your potential returns</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="space-y-4">
         {products?.map((product, index) => {
           const isPremium = index >= 4;
           const imageUrl = product.image_url || productImages[index] || productImages[0];
           return (
-            <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all duration-300 animate-fade-in ${isPremium ? 'border-accent border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
+            <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all animate-fade-in ${isPremium ? 'border-accent border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
               <CardContent className="p-0">
-                <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+                <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
                   <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  {isPremium && <span className="absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded bg-gradient-gold text-foreground">Premium</span>}
                 </div>
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Package className={`h-5 w-5 ${isPremium ? 'text-accent' : 'text-primary'}`} />
-                        <h3 className="font-bold text-lg">{product.name}</h3>
-                      </div>
-                      {isPremium && <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-gradient-gold text-foreground">Premium</span>}
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Package className={`h-5 w-5 ${isPremium ? 'text-accent' : 'text-primary'}`} />
+                      <h3 className="font-bold">{product.name}</h3>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">ETB {product.price}</p>
-                    </div>
+                    <p className="text-xl font-bold text-primary">ETB {product.price}</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        <span className="text-xs">Validity</span>
-                      </div>
-                      <p className="text-sm font-semibold">{product.validity_days} days</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-muted/50 rounded p-2">
+                      <Calendar className="h-3 w-3 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Validity</p>
+                      <p className="text-sm font-semibold">{product.validity_days}d</p>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <TrendingUp className="h-3 w-3" />
-                        <span className="text-xs">Daily</span>
-                      </div>
+                    <div className="bg-muted/50 rounded p-2">
+                      <TrendingUp className="h-3 w-3 mx-auto mb-1 text-secondary" />
+                      <p className="text-xs text-muted-foreground">Daily</p>
                       <p className="text-sm font-semibold text-secondary">ETB {product.daily_income}</p>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <DollarSign className="h-3 w-3" />
-                        <span className="text-xs">Total</span>
-                      </div>
+                    <div className="bg-muted/50 rounded p-2">
+                      <DollarSign className="h-3 w-3 mx-auto mb-1 text-accent" />
+                      <p className="text-xs text-muted-foreground">Total</p>
                       <p className="text-sm font-semibold text-accent">ETB {product.total_income}</p>
                     </div>
                   </div>
@@ -141,46 +111,40 @@ const ProductsSection = () => {
               <CardFooter className="p-4 pt-0 flex gap-2">
                 <Dialog open={isCalculatorOpen && selectedProduct?.id === product.id} onOpenChange={setIsCalculatorOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={() => handleCalculate(product)} variant="outline" className="flex-1">
-                      <Calculator className="h-4 w-4 mr-2" />
+                    <Button onClick={() => handleCalculate(product)} variant="outline" size="sm" className="flex-1">
+                      <Calculator className="h-4 w-4 mr-1" />
                       Calculate
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-md">
+                  <DialogContent className="max-w-sm">
                     <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <Calculator className="h-5 w-5 text-primary" />
-                        Earnings Calculator
-                      </DialogTitle>
+                      <DialogTitle>Earnings Calculator</DialogTitle>
                     </DialogHeader>
                     {selectedProduct && (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <Card className="bg-gradient-primary">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base text-white">{selectedProduct.name}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-3 text-white">
-                            <div className="flex justify-between items-center py-2 border-b border-accent/30">
-                              <span className="text-white/80">Investment Amount</span>
-                              <span className="font-bold text-lg">ETB {selectedProduct.price}</span>
+                          <CardContent className="p-4 space-y-2 text-white text-sm">
+                            <div className="flex justify-between border-b border-white/20 pb-2">
+                              <span className="text-white/80">Investment</span>
+                              <span className="font-bold">ETB {selectedProduct.price}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-accent/30">
+                            <div className="flex justify-between border-b border-white/20 pb-2">
                               <span className="text-white/80">Daily Income</span>
                               <span className="font-bold text-accent">ETB {calculateEarnings(selectedProduct).dailyIncome}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-accent/30">
-                              <span className="text-white/80">Contract Period</span>
+                            <div className="flex justify-between border-b border-white/20 pb-2">
+                              <span className="text-white/80">Period</span>
                               <span className="font-semibold">{calculateEarnings(selectedProduct).validityDays} days</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-accent/30">
-                              <span className="text-white/80">Total Earnings</span>
-                              <span className="font-bold text-lg text-white">ETB {calculateEarnings(selectedProduct).totalIncome}</span>
+                            <div className="flex justify-between border-b border-white/20 pb-2">
+                              <span className="text-white/80">Total Return</span>
+                              <span className="font-bold">ETB {calculateEarnings(selectedProduct).totalIncome}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-accent/30">
+                            <div className="flex justify-between border-b border-white/20 pb-2">
                               <span className="text-white/80">Net Profit</span>
-                              <span className="font-bold text-lg text-green-300">ETB {calculateEarnings(selectedProduct).profit}</span>
+                              <span className="font-bold text-green-300">ETB {calculateEarnings(selectedProduct).profit}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2">
+                            <div className="flex justify-between pt-1">
                               <span className="text-white/80">ROI</span>
                               <span className="font-bold text-xl text-accent">{calculateEarnings(selectedProduct).roi}%</span>
                             </div>
@@ -193,7 +157,7 @@ const ProductsSection = () => {
                     )}
                   </DialogContent>
                 </Dialog>
-                <Button onClick={() => handleBuyProduct(product.id)} className="flex-1" variant={isPremium ? "default" : "outline"}>
+                <Button onClick={() => handleBuyProduct(product.id)} size="sm" className="flex-1" variant={isPremium ? "default" : "outline"}>
                   Buy Now
                 </Button>
               </CardFooter>
@@ -201,7 +165,7 @@ const ProductsSection = () => {
           );
         })}
       </div>
-    </section>
+    </div>
   );
 };
 
