@@ -68,90 +68,85 @@ const TeamSection = () => {
   };
 
   return (
-    <section id="team" className="py-8 px-4 max-w-lg mx-auto space-y-6">
-      <div className="space-y-2 animate-fade-in">
-        <h2 className="text-2xl font-bold">My Team</h2>
-        <p className="text-muted-foreground">Build your network and earn rewards</p>
+    <div className="p-4 max-w-lg mx-auto space-y-6 pb-20">
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold">My Team</h2>
+        <p className="text-sm text-muted-foreground">Build your network and earn rewards</p>
       </div>
 
       <Card className="shadow-elevated bg-gradient-primary">
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="text-white">
-              <p className="text-sm opacity-90">Your Referral Code</p>
-              <p className="text-2xl font-bold">{profile?.referral_code || 'Loading...'}</p>
+              <p className="text-xs opacity-80">Your Referral Code</p>
+              <p className="text-xl font-bold">{profile?.referral_code || '...'}</p>
             </div>
             <Button variant="secondary" size="icon" onClick={copyReferralLink} className="rounded-full">
               <Copy className="h-4 w-4" />
             </Button>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
-            <p className="text-white text-sm break-all">{referralLink}</p>
+          <div className="bg-white/20 backdrop-blur-sm rounded p-2">
+            <p className="text-white text-xs break-all">{referralLink}</p>
           </div>
-          <Button variant="secondary" className="w-full" onClick={copyReferralLink}>
+          <Button variant="secondary" size="sm" className="w-full" onClick={copyReferralLink}>
             <Copy className="mr-2 h-4 w-4" />
-            Copy Referral Link
+            Copy Link
           </Button>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <Card className="shadow-card">
-          <CardContent className="p-4 space-y-1">
+          <CardContent className="p-3 space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span className="text-sm">Total Referrals</span>
+              <span className="text-xs">Referrals</span>
             </div>
             <p className="text-2xl font-bold text-primary">{referrals?.length || 0}</p>
           </CardContent>
         </Card>
         <Card className="shadow-card">
-          <CardContent className="p-4 space-y-1">
+          <CardContent className="p-3 space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Gift className="h-4 w-4" />
-              <span className="text-sm">Bonus Earned</span>
+              <span className="text-xs">Earned</span>
             </div>
-            <p className="text-2xl font-bold text-accent">ETB {referralEarnings?.total.toFixed(2) || '0.00'}</p>
+            <p className="text-2xl font-bold text-accent">ETB {referralEarnings?.total.toFixed(0) || '0'}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card className="shadow-card bg-primary/5 border-primary/20">
-        <CardContent className="p-4 space-y-3">
-          <h3 className="font-semibold flex items-center gap-2">
+        <CardContent className="p-3 space-y-2">
+          <h3 className="font-semibold text-sm flex items-center gap-2">
             <Gift className="h-4 w-4 text-primary" />
-            Referral Bonus Rules
+            Bonus Rules
           </h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex gap-2">
-              <span className="text-primary font-semibold">•</span>
-              <p>Earn <span className="font-semibold text-foreground">{referralSettings?.bonus_amount || 0}% bonus</span> when your direct referral makes their first investment</p>
-            </div>
-            <div className="flex gap-2">
-              <span className="text-primary font-semibold">•</span>
-              <p>Earn <span className="font-semibold text-foreground">3% bonus</span> when your referral's referral makes their first investment</p>
-            </div>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p>• {referralSettings?.bonus_amount || 0}% from direct referral's first investment</p>
+            <p>• 3% from 2nd level referral's first investment</p>
+            <p>• Min ETB 500 investment required</p>
           </div>
         </CardContent>
       </Card>
 
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Team Members</h3>
+        <h3 className="font-semibold">Team Members</h3>
         {referrals && referrals.length > 0 ? (
           <div className="space-y-2">
             {referrals.map((referral) => (
               <Card key={referral.id} className="shadow-card">
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="p-3 space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                        <Users className="h-5 w-5 text-white" />
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center">
+                        <Users className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold">{referral.phone_number}</p>
+                        <p className="font-semibold text-sm">{referral.phone_number}</p>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>Joined {format(new Date(referral.created_at), 'MMM dd, yyyy')}</span>
+                          <span>{format(new Date(referral.created_at), 'MMM dd, yyyy')}</span>
                         </div>
                       </div>
                     </div>
@@ -159,12 +154,12 @@ const TeamSection = () => {
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Investment Status (Min 500 ETB)</span>
+                      <span className="text-muted-foreground">Investment (Min 500)</span>
                       <span className={referral.hasInvested ? "text-green-500 font-semibold" : "text-muted-foreground"}>
-                        {referral.hasInvested ? "Eligible" : `ETB ${referral.totalInvested || 0}/500`}
+                        {referral.hasInvested ? "Eligible" : `${referral.totalInvested || 0}/500`}
                       </span>
                     </div>
-                    <Progress value={referral.investmentProgress || 0} className="h-2" />
+                    <Progress value={referral.investmentProgress || 0} className="h-1.5" />
                   </div>
                 </CardContent>
               </Card>
@@ -172,15 +167,15 @@ const TeamSection = () => {
           </div>
         ) : (
           <Card className="shadow-card">
-            <CardContent className="p-8 text-center">
-              <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">No referrals yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Share your referral link to start building your team</p>
+            <CardContent className="p-6 text-center">
+              <Users className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">No referrals yet</p>
+              <p className="text-xs text-muted-foreground">Share your link to start earning</p>
             </CardContent>
           </Card>
         )}
       </div>
-    </section>
+    </div>
   );
 };
 

@@ -1,22 +1,30 @@
-import { useRef, useState, useEffect } from "react";
-import Layout from "@/components/Layout";
-import HeroSection from "@/components/sections/HeroSection";
-import DashboardSection from "@/components/sections/DashboardSection";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Package, Users, User, CreditCard, Wallet, TrendingUp, MessageCircle, History, Headphones, FileText, Info, ChevronLeft, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import WelcomePopup from "@/components/WelcomePopup";
+import BonusCodeClaim from "@/components/BonusCodeClaim";
+import heroBg from "@/assets/hero-bg.jpg";
+
+// Section components
 import ProductsSection from "@/components/sections/ProductsSection";
 import TeamSection from "@/components/sections/TeamSection";
 import AccountSection from "@/components/sections/AccountSection";
-import WelcomePopup from "@/components/WelcomePopup";
-import { useAuth } from "@/contexts/AuthContext";
+
+type ActiveView = "home" | "products" | "team" | "account" | "records";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [activeSection, setActiveSection] = useState("dashboard");
-  
-  const dashboardRef = useRef<HTMLDivElement>(null);
-  const productsRef = useRef<HTMLDivElement>(null);
-  const teamRef = useRef<HTMLDivElement>(null);
-  const accountRef = useRef<HTMLDivElement>(null);
+  const [activeView, setActiveView] = useState<ActiveView>("home");
+  const [showHero, setShowHero] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -24,75 +32,248 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const scrollToSection = (section: string) => {
-    const refs: Record<string, React.RefObject<HTMLDivElement>> = {
-      dashboard: dashboardRef,
-      products: productsRef,
-      team: teamRef,
-      account: accountRef,
-    };
-    
-    const ref = refs[section];
-    if (ref?.current) {
-      const yOffset = -80;
-      const y = ref.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-    setActiveSection(section);
-  };
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user?.id).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: activeProducts } = useQuery({
+    queryKey: ['activeProducts', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('user_products').select('*, products(*)').eq('user_id', user?.id).eq('is_active', true);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: availableBalance } = useAvailableBalance(user?.id);
+
+  const { data: telegramContact } = useQuery({
+    queryKey: ['telegram-contact'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('customer_service_contacts').select('*').eq('contact_type', 'telegram').eq('is_active', true).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ['isAdmin', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from('user_roles').select('role').eq('user_id', user?.id).eq('role', 'admin').single();
+      return !!data;
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = [
-        { id: "dashboard", ref: dashboardRef },
-        { id: "products", ref: productsRef },
-        { id: "team", ref: teamRef },
-        { id: "account", ref: accountRef },
-      ];
+    if (!user?.id) return;
+    const channel = supabase
+      .channel('user-products-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_products', filter: `user_id=eq.${user.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['activeProducts', user.id] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['availableBalance', user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, queryClient]);
 
-      const scrollPosition = window.scrollY + 150;
+  const totalInvestment = activeProducts?.reduce((sum, p) => sum + Number(p.products?.price || 0), 0) || 0;
+  const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
 
-      for (const section of sections.reverse()) {
-        if (section.ref.current) {
-          const sectionTop = section.ref.current.offsetTop;
-          if (scrollPosition >= sectionTop) {
-            setActiveSection(section.id);
-            break;
-          }
-        }
-      }
-    };
+  const shortcuts = [
+    { icon: Package, label: "Products", description: "View investment packages", action: () => setActiveView("products"), gradient: "from-blue-600 to-cyan-600" },
+    { icon: Users, label: "Team", description: "View referrals & bonuses", action: () => setActiveView("team"), gradient: "from-purple-600 to-pink-600" },
+    { icon: User, label: "Account", description: "Profile & settings", action: () => setActiveView("account"), gradient: "from-emerald-600 to-teal-600" },
+    { icon: CreditCard, label: "Recharge", description: "Add funds", action: () => navigate('/recharge'), gradient: "from-orange-600 to-red-600" },
+    { icon: Wallet, label: "Withdraw", description: "Request payout", action: () => navigate('/withdrawal'), gradient: "from-indigo-600 to-violet-600" },
+    { icon: History, label: "Records", description: "Transaction history", action: () => navigate('/mine/records'), gradient: "from-slate-600 to-zinc-600" },
+  ];
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const quickLinks = [
+    { icon: Info, label: "About", path: "/mine/about" },
+    { icon: FileText, label: "Rules", path: "/mine/rules" },
+    { icon: Headphones, label: "Support", path: "/mine/support" },
+  ];
+
+  // Render section views
+  if (activeView !== "home") {
+    return (
+      <div className="min-h-screen bg-background">
+        <nav className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b border-border shadow-elevated z-50">
+          <div className="max-w-lg mx-auto flex items-center h-14 px-4">
+            <Button variant="ghost" size="icon" onClick={() => setActiveView("home")}>
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="ml-2 font-bold text-lg capitalize">{activeView}</h1>
+          </div>
+        </nav>
+        <main className="pt-14">
+          {activeView === "products" && <ProductsSection />}
+          {activeView === "team" && <TeamSection />}
+          {activeView === "account" && <AccountSection />}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <>
-      <Layout activeSection={activeSection} onScrollToSection={scrollToSection}>
-        <HeroSection onScrollToSection={scrollToSection} />
-        
-        <div ref={dashboardRef}>
-          <DashboardSection onScrollToSection={scrollToSection} />
-        </div>
-        
-        <div ref={productsRef} className="border-t border-border/50">
-          <ProductsSection />
-        </div>
-        
-        <div ref={teamRef} className="border-t border-border/50">
-          <TeamSection />
-        </div>
-        
-        <div ref={accountRef} className="border-t border-border/50">
-          <AccountSection />
-        </div>
-      </Layout>
+      <div className="min-h-screen bg-background">
+        {/* Hero Section */}
+        {showHero && (
+          <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }} />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-background" />
+            
+            <div className="relative z-10 text-center px-4 space-y-6 animate-fade-in">
+              <h1 className="text-5xl md:text-7xl font-black tracking-tight">
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">
+                  DOOM
+                </span>
+              </h1>
+              <p className="text-xl text-slate-300 max-w-md mx-auto">
+                Maximize your money with smart investments
+              </p>
+              <Button 
+                size="lg"
+                onClick={() => setShowHero(false)}
+                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-cyan-500/25 animate-pulse"
+              >
+                Get Started
+              </Button>
+            </div>
+          </section>
+        )}
 
-      <WelcomePopup 
-        open={showWelcomePopup} 
-        onClose={() => setShowWelcomePopup(false)} 
-      />
+        {/* Main Dashboard Content */}
+        <div className={`max-w-lg mx-auto p-4 space-y-6 ${showHero ? '' : 'pt-6'}`}>
+          {/* Welcome & Balance */}
+          <div className="space-y-2 animate-fade-in">
+            <h2 className="text-xl font-bold">Welcome, {profile?.phone_number}</h2>
+          </div>
+
+          <Card className="shadow-elevated bg-gradient-to-br from-slate-900 via-blue-950 to-slate-800 border-2 border-blue-500/30 animate-scale-in">
+            <CardContent className="p-6 text-center space-y-2">
+              <p className="text-sm text-blue-300/90">Available Balance</p>
+              <p className="text-4xl font-bold text-white">ETB {(availableBalance || 0).toFixed(2)}</p>
+            </CardContent>
+          </Card>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="shadow-card bg-gradient-to-br from-slate-900 to-slate-800 border border-blue-500/20 animate-fade-in">
+              <CardContent className="p-4 space-y-1">
+                <div className="flex items-center gap-2 text-blue-300">
+                  <Wallet className="h-4 w-4" />
+                  <span className="text-xs">Investment</span>
+                </div>
+                <p className="text-xl font-bold text-white">ETB {totalInvestment.toFixed(0)}</p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-card bg-gradient-to-br from-blue-950 to-slate-900 border border-cyan-500/20 animate-fade-in">
+              <CardContent className="p-4 space-y-1">
+                <div className="flex items-center gap-2 text-cyan-300">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-xs">Daily Income</span>
+                </div>
+                <p className="text-xl font-bold text-white">ETB {totalDailyIncome.toFixed(0)}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Admin Panel Shortcut */}
+          {isAdmin && (
+            <Card className="shadow-elevated bg-gradient-to-r from-amber-600 to-orange-600 animate-fade-in cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => navigate('/admin')}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 text-white">
+                  <Shield className="h-6 w-6" />
+                  <div>
+                    <p className="font-bold">Admin Panel</p>
+                    <p className="text-xs text-white/80">Manage platform</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Main Shortcuts Grid */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold">Quick Access</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {shortcuts.map((shortcut, index) => {
+                const Icon = shortcut.icon;
+                return (
+                  <Card
+                    key={shortcut.label}
+                    className="cursor-pointer hover:scale-[1.03] transition-all duration-300 overflow-hidden shadow-card animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={shortcut.action}
+                  >
+                    <CardContent className="p-0">
+                      <div className={`bg-gradient-to-br ${shortcut.gradient} p-4 h-24 flex flex-col justify-between`}>
+                        <Icon className="h-7 w-7 text-white/90" />
+                        <div>
+                          <p className="font-bold text-white text-sm">{shortcut.label}</p>
+                          <p className="text-xs text-white/70">{shortcut.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="flex gap-2 justify-center">
+            {quickLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Button key={link.label} variant="outline" size="sm" onClick={() => navigate(link.path)} className="flex-1">
+                  <Icon className="h-4 w-4 mr-1" />
+                  {link.label}
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Telegram */}
+          {telegramContact && (
+            <Card className="shadow-card bg-gradient-to-r from-blue-950 to-slate-900 border border-blue-500/30 animate-fade-in">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-500/20 p-2 rounded-full">
+                      <MessageCircle className="h-5 w-5 text-blue-300" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-sm">Join Telegram</p>
+                      <p className="text-xs text-blue-200">{telegramContact.value}</p>
+                    </div>
+                  </div>
+                  <Button size="sm" onClick={() => window.open(telegramContact.link, '_blank')} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Join
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Bonus Code */}
+          <BonusCodeClaim />
+        </div>
+      </div>
+
+      <WelcomePopup open={showWelcomePopup} onClose={() => setShowWelcomePopup(false)} />
     </>
   );
 };
