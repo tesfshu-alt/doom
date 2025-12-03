@@ -89,7 +89,7 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="space-y-2">
           <CardTitle className="text-3xl font-bold text-center bg-gradient-primary bg-clip-text text-transparent">
-            EthioMax
+            Doom
           </CardTitle>
           <CardDescription className="text-center">
             Start your investment journey today

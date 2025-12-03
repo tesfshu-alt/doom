@@ -7,9 +7,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Team from "./pages/Team";
-import Mine from "./pages/Mine";
 import Recharge from "./pages/Recharge";
 import Withdrawal from "./pages/Withdrawal";
 import Admin from "./pages/Admin";
@@ -33,9 +30,6 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-            <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
-            <Route path="/mine" element={<ProtectedRoute><Mine /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
             <Route path="/withdrawal" element={<ProtectedRoute><Withdrawal /></ProtectedRoute>} />
             <Route path="/mine/bank-accounts" element={<ProtectedRoute><BankAccounts /></ProtectedRoute>} />

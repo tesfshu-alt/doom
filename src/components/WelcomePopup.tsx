@@ -51,7 +51,7 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
-            {settings?.title || 'Welcome to EthioMax'}
+            {settings?.title || 'Welcome to Doom'}
           </DialogTitle>
         </DialogHeader>
         
