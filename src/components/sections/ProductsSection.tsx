@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMainBalance } from "@/hooks/useMainBalance";
+import { useToast } from "@/hooks/use-toast";
 import { Package, TrendingUp, Calendar, DollarSign, Calculator } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import package1 from "@/assets/products/package-1.jpg";
@@ -15,11 +17,15 @@ import package6 from "@/assets/products/package-6.jpg";
 import package7 from "@/assets/products/package-7.jpg";
 
 const ProductsSection = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   
   const productImages = [package1, package2, package3, package4, package5, package6, package7];
+
+  const { data: mainBalance } = useMainBalance(user?.id);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
@@ -30,8 +36,72 @@ const ProductsSection = () => {
     },
   });
 
-  const handleBuyProduct = (productId: string) => {
-    navigate(`/recharge?product=${productId}`);
+  const buyProductMutation = useMutation({
+    mutationFn: async (product: any) => {
+      if (!user) throw new Error('Not authenticated');
+      
+      const balance = mainBalance || 0;
+      if (balance < product.price) {
+        throw new Error(`Insufficient balance. You need ETB ${product.price} but have ETB ${balance.toFixed(2)}`);
+      }
+
+      // Create purchase transaction
+      const { error: txError } = await supabase.from('transactions').insert({
+        user_id: user.id,
+        type: 'purchase',
+        amount: product.price,
+        description: `Purchased ${product.name}`,
+      });
+      if (txError) throw txError;
+
+      // Calculate expiry date
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + product.validity_days);
+
+      // Create user_product entry (create a dummy recharge_id since we're buying directly)
+      const { data: rechargeData, error: rechargeError } = await supabase.from('recharges').insert({
+        user_id: user.id,
+        product_id: product.id,
+        amount: product.price,
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        payer_account_name: 'Balance Purchase',
+        transaction_id: `BAL-${Date.now()}`,
+      }).select().single();
+      
+      if (rechargeError) throw rechargeError;
+
+      const { error: productError } = await supabase.from('user_products').insert({
+        user_id: user.id,
+        product_id: product.id,
+        recharge_id: rechargeData.id,
+        expiry_date: expiryDate.toISOString(),
+        is_active: true,
+      });
+      if (productError) throw productError;
+
+      return product;
+    },
+    onSuccess: (product) => {
+      queryClient.invalidateQueries({ queryKey: ['mainBalance'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
+      queryClient.invalidateQueries({ queryKey: ['activeProducts'] });
+      toast({
+        title: "Product Purchased!",
+        description: `You have successfully purchased ${product.name}. It will start generating income.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Purchase Failed",
+        description: error.message,
+      });
+    },
+  });
+
+  const handleBuyProduct = (product: any) => {
+    buyProductMutation.mutate(product);
   };
 
   const handleCalculate = (product: any) => {
@@ -67,13 +137,14 @@ const ProductsSection = () => {
     <div className="p-4 max-w-lg mx-auto space-y-6 pb-20">
       <div className="space-y-2">
         <h2 className="text-xl font-bold">Investment Products</h2>
-        <p className="text-sm text-muted-foreground">Choose a package that suits your goals</p>
+        <p className="text-sm text-muted-foreground">Your balance: <span className="font-bold text-primary">ETB {(mainBalance || 0).toFixed(2)}</span></p>
       </div>
 
       <div className="space-y-4">
         {products?.map((product, index) => {
           const isPremium = index >= 4;
           const imageUrl = product.image_url || productImages[index] || productImages[0];
+          const canAfford = (mainBalance || 0) >= product.price;
           return (
             <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all animate-fade-in ${isPremium ? 'border-accent border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
               <CardContent className="p-0">
@@ -150,15 +221,25 @@ const ProductsSection = () => {
                             </div>
                           </CardContent>
                         </Card>
-                        <Button onClick={() => { setIsCalculatorOpen(false); handleBuyProduct(selectedProduct.id); }} className="w-full">
-                          Invest Now
+                        <Button 
+                          onClick={() => { setIsCalculatorOpen(false); handleBuyProduct(selectedProduct); }} 
+                          className="w-full"
+                          disabled={!canAfford || buyProductMutation.isPending}
+                        >
+                          {buyProductMutation.isPending ? 'Processing...' : canAfford ? 'Buy Now' : 'Insufficient Balance'}
                         </Button>
                       </div>
                     )}
                   </DialogContent>
                 </Dialog>
-                <Button onClick={() => handleBuyProduct(product.id)} size="sm" className="flex-1" variant={isPremium ? "default" : "outline"}>
-                  Buy Now
+                <Button 
+                  onClick={() => handleBuyProduct(product)} 
+                  size="sm" 
+                  className="flex-1" 
+                  variant={isPremium ? "default" : "outline"}
+                  disabled={!canAfford || buyProductMutation.isPending}
+                >
+                  {buyProductMutation.isPending ? 'Processing...' : canAfford ? 'Buy Now' : 'Recharge First'}
                 </Button>
               </CardFooter>
             </Card>

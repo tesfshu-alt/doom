@@ -5,39 +5,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, ArrowLeft, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Copy, CheckCircle, ChevronLeft } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft } from "lucide-react";
 
 const Recharge = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
-  const productId = searchParams.get('product');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [amount, setAmount] = useState("");
   const [payerAccountNumber, setPayerAccountNumber] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [transactionId, setTransactionId] = useState("");
-
-  const { data: product } = useQuery({
-    queryKey: ['product', productId],
-    queryFn: async () => {
-      if (!productId) return null;
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!productId,
-  });
 
   const { data: adminBank } = useQuery({
     queryKey: ['adminBank'],
@@ -67,7 +49,6 @@ const Recharge = () => {
       
       if (error) throw error;
       
-      // Auto-fill the account number when bank account is loaded
       if (data && !payerAccountNumber) {
         setPayerAccountNumber(data.account_number);
       }
@@ -79,7 +60,8 @@ const Recharge = () => {
 
   const createRechargeMutation = useMutation({
     mutationFn: async () => {
-      if (!product || !user) throw new Error('Missing data');
+      if (!user) throw new Error('Not authenticated');
+      if (!amount || Number(amount) <= 0) throw new Error('Please enter a valid amount');
       if (!payerAccountNumber.trim()) throw new Error('Please enter payer account number');
       if (!buyerName.trim()) throw new Error('Please enter buyer name');
       if (!transactionId.trim()) throw new Error('Please enter transaction ID');
@@ -88,8 +70,8 @@ const Recharge = () => {
         .from('recharges')
         .insert({
           user_id: user.id,
-          product_id: product.id,
-          amount: product.price,
+          product_id: null,
+          amount: Number(amount),
           status: 'pending',
           payer_account_name: `${buyerName.trim()} (${payerAccountNumber.trim()})`,
           transaction_id: transactionId.trim(),
@@ -103,6 +85,7 @@ const Recharge = () => {
         title: "Success!",
         description: "Your recharge request has been submitted. Please wait for admin approval.",
       });
+      setAmount("");
       setBuyerName("");
       setPayerAccountNumber("");
       setTransactionId("");
@@ -131,34 +114,6 @@ const Recharge = () => {
     });
   };
 
-
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-background">
-        <nav className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b border-border shadow-elevated z-50">
-          <div className="max-w-lg mx-auto flex items-center h-14 px-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="ml-2 font-bold text-lg">Recharge</h1>
-          </div>
-        </nav>
-        <main className="pt-14">
-          <div className="max-w-lg mx-auto p-4">
-            <Card className="shadow-card">
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">No product selected</p>
-                <Button onClick={() => navigate('/')} className="mt-4">
-                  View Products
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <nav className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b border-border shadow-elevated z-50">
@@ -166,35 +121,11 @@ const Recharge = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h1 className="ml-2 font-bold text-lg">Recharge</h1>
+          <h1 className="ml-2 font-bold text-lg">Recharge Balance</h1>
         </div>
       </nav>
       <main className="pt-14">
         <div className="max-w-lg mx-auto p-4 space-y-6">
-
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg">Product Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Product:</span>
-              <span className="font-semibold">{product.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Amount:</span>
-              <span className="font-bold text-primary text-xl">ETB {product.price}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Validity:</span>
-              <span className="font-semibold">{product.validity_days} days</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Daily Income:</span>
-              <span className="font-semibold text-secondary">ETB {product.daily_income}</span>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card className="shadow-elevated bg-gradient-primary">
           <CardHeader>
@@ -264,11 +195,11 @@ const Recharge = () => {
             <div className="space-y-2 text-white/90 text-sm">
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>Transfer the exact amount to the account above</p>
+                <p>Transfer your desired amount to the account above</p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>Confirm your payer account number</p>
+                <p>Fill in the form below with payment details</p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -280,6 +211,21 @@ const Recharge = () => {
 
         <Card className="shadow-card">
           <CardContent className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-base font-semibold">
+                Amount (ETB) *
+              </Label>
+              <Input
+                id="amount"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount to recharge"
+                min="1"
+                required
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="buyer-name" className="text-base font-semibold">
                 Buyer Name *
@@ -335,10 +281,10 @@ const Recharge = () => {
 
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !payerAccountNumber.trim() || !buyerName.trim() || !transactionId.trim()}
+            disabled={isSubmitting || !amount || !payerAccountNumber.trim() || !buyerName.trim() || !transactionId.trim()}
             className="w-full h-12 text-lg"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Payment Request'}
+            {isSubmitting ? 'Submitting...' : 'Submit Recharge Request'}
           </Button>
         </div>
       </main>
