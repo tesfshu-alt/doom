@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet, ArrowLeft, AlertCircle, Clock } from "lucide-react";
+import { Wallet, ChevronLeft, AlertCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Layout from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
@@ -168,17 +167,17 @@ const Withdrawal = () => {
   const netAmount = withdrawalAmount - feeAmount;
 
   return (
-    <Layout>
-      <div className="max-w-lg mx-auto p-4 space-y-6">
-        <div className="flex items-center gap-3 animate-fade-in">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
+    <div className="min-h-screen bg-background">
+      <nav className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b border-border shadow-elevated z-50">
+        <div className="max-w-lg mx-auto flex items-center h-14 px-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Withdrawal</h1>
-            <p className="text-sm text-muted-foreground">Request payout to your bank account</p>
-          </div>
+          <h1 className="ml-2 font-bold text-lg">Withdrawal</h1>
         </div>
+      </nav>
+      <main className="pt-14">
+        <div className="max-w-lg mx-auto p-4 space-y-6">
 
         <Card className="shadow-card animate-fade-in">
           <CardHeader>
@@ -305,8 +304,9 @@ const Withdrawal = () => {
             </CardContent>
           </Card>
         )}
-      </div>
-    </Layout>
+        </div>
+      </main>
+    </div>
   );
 };
 

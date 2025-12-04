@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Copy, ArrowLeft, CheckCircle } from "lucide-react";
-import Layout from "@/components/Layout";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ChevronLeft } from "lucide-react";
 
 const Recharge = () => {
   const { user } = useAuth();
@@ -134,33 +134,43 @@ const Recharge = () => {
 
   if (!product) {
     return (
-      <Layout>
-        <div className="max-w-lg mx-auto p-4">
-          <Card className="shadow-card">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No product selected</p>
-              <Button onClick={() => navigate('/products')} className="mt-4">
-                View Products
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
+      <div className="min-h-screen bg-background">
+        <nav className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b border-border shadow-elevated z-50">
+          <div className="max-w-lg mx-auto flex items-center h-14 px-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="ml-2 font-bold text-lg">Recharge</h1>
+          </div>
+        </nav>
+        <main className="pt-14">
+          <div className="max-w-lg mx-auto p-4">
+            <Card className="shadow-card">
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No product selected</p>
+                <Button onClick={() => navigate('/')} className="mt-4">
+                  View Products
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="max-w-lg mx-auto p-4 space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
+    <div className="min-h-screen bg-background">
+      <nav className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b border-border shadow-elevated z-50">
+        <div className="max-w-lg mx-auto flex items-center h-14 px-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Recharge</h1>
-            <p className="text-sm text-muted-foreground">Complete your payment</p>
-          </div>
+          <h1 className="ml-2 font-bold text-lg">Recharge</h1>
         </div>
+      </nav>
+      <main className="pt-14">
+        <div className="max-w-lg mx-auto p-4 space-y-6">
 
         <Card className="shadow-card">
           <CardHeader>
@@ -323,15 +333,16 @@ const Recharge = () => {
           </CardContent>
         </Card>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !payerAccountNumber.trim() || !buyerName.trim() || !transactionId.trim()}
-          className="w-full h-12 text-lg"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Payment Request'}
-        </Button>
-      </div>
-    </Layout>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !payerAccountNumber.trim() || !buyerName.trim() || !transactionId.trim()}
+            className="w-full h-12 text-lg"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Payment Request'}
+          </Button>
+        </div>
+      </main>
+    </div>
   );
 };
 

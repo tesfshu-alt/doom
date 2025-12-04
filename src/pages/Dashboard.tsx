@@ -90,12 +90,12 @@ const Dashboard = () => {
   const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
 
   const shortcuts = [
-    { icon: Package, label: "Products", description: "View investment packages", action: () => setActiveView("products"), gradient: "from-blue-600 to-cyan-600" },
-    { icon: Users, label: "Team", description: "View referrals & bonuses", action: () => setActiveView("team"), gradient: "from-purple-600 to-pink-600" },
-    { icon: User, label: "Account", description: "Profile & settings", action: () => setActiveView("account"), gradient: "from-emerald-600 to-teal-600" },
-    { icon: CreditCard, label: "Recharge", description: "Add funds", action: () => navigate('/recharge'), gradient: "from-orange-600 to-red-600" },
-    { icon: Wallet, label: "Withdraw", description: "Request payout", action: () => navigate('/withdrawal'), gradient: "from-indigo-600 to-violet-600" },
-    { icon: History, label: "Records", description: "Transaction history", action: () => navigate('/mine/records'), gradient: "from-slate-600 to-zinc-600" },
+    { icon: Package, label: "Products", description: "View investment packages", action: () => setActiveView("products"), gradient: "from-emerald-600 to-green-600" },
+    { icon: Users, label: "Team", description: "View referrals & bonuses", action: () => setActiveView("team"), gradient: "from-teal-600 to-emerald-600" },
+    { icon: User, label: "Account", description: "Profile & settings", action: () => setActiveView("account"), gradient: "from-green-600 to-teal-600" },
+    { icon: CreditCard, label: "Recharge", description: "Add funds", action: () => navigate('/recharge'), gradient: "from-emerald-700 to-green-700" },
+    { icon: Wallet, label: "Withdraw", description: "Request payout", action: () => navigate('/withdrawal'), gradient: "from-green-700 to-emerald-700" },
+    { icon: History, label: "Records", description: "Transaction history", action: () => navigate('/mine/records'), gradient: "from-teal-700 to-green-700" },
   ];
 
   const quickLinks = [
@@ -132,21 +132,21 @@ const Dashboard = () => {
         {showHero && (
           <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }} />
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/80 via-emerald-950/60 to-background" />
             
             <div className="relative z-10 text-center px-4 space-y-6 animate-fade-in">
               <h1 className="text-5xl md:text-7xl font-black tracking-tight">
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 bg-clip-text text-transparent">
                   DOOM
                 </span>
               </h1>
-              <p className="text-xl text-slate-300 max-w-md mx-auto">
+              <p className="text-xl text-emerald-100 max-w-md mx-auto">
                 Maximize your money with smart investments
               </p>
               <Button 
                 size="lg"
                 onClick={() => setShowHero(false)}
-                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-cyan-500/25 animate-pulse"
+                className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white border-0 shadow-lg shadow-emerald-500/25 animate-pulse"
               >
                 Get Started
               </Button>
@@ -161,27 +161,27 @@ const Dashboard = () => {
             <h2 className="text-xl font-bold">Welcome, {profile?.phone_number}</h2>
           </div>
 
-          <Card className="shadow-elevated bg-gradient-to-br from-slate-900 via-blue-950 to-slate-800 border-2 border-blue-500/30 animate-scale-in">
+          <Card className="shadow-elevated bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-900 border-2 border-emerald-500/30 animate-scale-in">
             <CardContent className="p-6 text-center space-y-2">
-              <p className="text-sm text-blue-300/90">Available Balance</p>
+              <p className="text-sm text-emerald-300/90">Available Balance</p>
               <p className="text-4xl font-bold text-white">ETB {(availableBalance || 0).toFixed(2)}</p>
             </CardContent>
           </Card>
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4">
-            <Card className="shadow-card bg-gradient-to-br from-slate-900 to-slate-800 border border-blue-500/20 animate-fade-in">
+            <Card className="shadow-card bg-gradient-to-br from-emerald-950 to-green-900 border border-emerald-500/20 animate-fade-in">
               <CardContent className="p-4 space-y-1">
-                <div className="flex items-center gap-2 text-blue-300">
+                <div className="flex items-center gap-2 text-emerald-300">
                   <Wallet className="h-4 w-4" />
                   <span className="text-xs">Investment</span>
                 </div>
                 <p className="text-xl font-bold text-white">ETB {totalInvestment.toFixed(0)}</p>
               </CardContent>
             </Card>
-            <Card className="shadow-card bg-gradient-to-br from-blue-950 to-slate-900 border border-cyan-500/20 animate-fade-in">
+            <Card className="shadow-card bg-gradient-to-br from-green-950 to-emerald-900 border border-green-500/20 animate-fade-in">
               <CardContent className="p-4 space-y-1">
-                <div className="flex items-center gap-2 text-cyan-300">
+                <div className="flex items-center gap-2 text-green-300">
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xs">Daily Income</span>
                 </div>
@@ -248,19 +248,19 @@ const Dashboard = () => {
 
           {/* Telegram */}
           {telegramContact && (
-            <Card className="shadow-card bg-gradient-to-r from-blue-950 to-slate-900 border border-blue-500/30 animate-fade-in">
+            <Card className="shadow-card bg-gradient-to-r from-emerald-950 to-green-900 border border-emerald-500/30 animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-500/20 p-2 rounded-full">
-                      <MessageCircle className="h-5 w-5 text-blue-300" />
+                    <div className="bg-emerald-500/20 p-2 rounded-full">
+                      <MessageCircle className="h-5 w-5 text-emerald-300" />
                     </div>
                     <div>
                       <p className="font-semibold text-white text-sm">Join Telegram</p>
-                      <p className="text-xs text-blue-200">{telegramContact.value}</p>
+                      <p className="text-xs text-emerald-200">{telegramContact.value}</p>
                     </div>
                   </div>
-                  <Button size="sm" onClick={() => window.open(telegramContact.link, '_blank')} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button size="sm" onClick={() => window.open(telegramContact.link, '_blank')} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                     Join
                   </Button>
                 </div>
