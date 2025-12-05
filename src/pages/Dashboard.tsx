@@ -239,7 +239,7 @@ const Dashboard = () => {
                     : 'text-yellow-200'
                 }`}>
                   {latestRecharge.status === 'approved' 
-                    ? 'Recharged successfully! Now buy your product from the Products section.' 
+                    ? 'Balance added successfully! Go to Products to purchase your investment.' 
                     : latestRecharge.status === 'rejected'
                     ? 'Recharge Rejected - Please pay the product amount before requesting.'
                     : 'Recharge Pending - Waiting for admin approval.'}

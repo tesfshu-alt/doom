@@ -52,6 +52,11 @@ const ProductsSection = () => {
     mutationFn: async (product: any) => {
       if (!user) throw new Error('Not authenticated');
       
+      // Check if user already owns this product
+      if (userProducts?.includes(product.id)) {
+        throw new Error('You already own this product. It is currently working and generating income for you.');
+      }
+      
       const balance = mainBalance || 0;
       if (balance < product.price) {
         throw new Error(`Insufficient balance. You need ETB ${product.price} but have ETB ${balance.toFixed(2)}`);
