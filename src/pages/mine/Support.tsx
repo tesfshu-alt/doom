@@ -1,14 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { MessageCircle, ArrowLeft } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const Support = () => {
-  const navigate = useNavigate();
-
   const { data: contacts, isLoading } = useQuery({
     queryKey: ["customer-service-contacts"],
     queryFn: async () => {
@@ -24,18 +20,8 @@ const Support = () => {
   });
 
   return (
-    <Layout>
+    <Layout showBackOnly pageTitle="Customer Service">
       <div className="max-w-lg mx-auto p-4 space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Customer Service</h1>
-            <p className="text-sm text-muted-foreground">Get help and support</p>
-          </div>
-        </div>
-
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 text-white space-y-2">
             <h2 className="text-xl font-bold">We're Here to Help</h2>

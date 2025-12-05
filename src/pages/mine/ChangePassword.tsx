@@ -6,12 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 
 const ChangePassword = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const { toast } = useToast();
@@ -55,27 +54,17 @@ const ChangePassword = () => {
         title: "Success!",
         description: "Your password has been changed successfully.",
       });
-      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      navigate("/mine");
+      navigate("/");
     }
 
     setIsLoading(false);
   };
 
   return (
-    <Layout>
+    <Layout showBackOnly pageTitle="Change Password">
       <div className="max-w-lg mx-auto p-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/mine")}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-
         <Card className="shadow-elevated">
           <CardHeader>
             <CardTitle>Change Password</CardTitle>

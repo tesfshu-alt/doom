@@ -1,12 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Shield, Users } from "lucide-react";
+import { TrendingUp, Shield, Users } from "lucide-react";
 import Layout from "@/components/Layout";
 
 const About = () => {
-  const navigate = useNavigate();
-
   const features = [
     {
       icon: TrendingUp,
@@ -26,18 +22,8 @@ const About = () => {
   ];
 
   return (
-    <Layout>
+    <Layout showBackOnly pageTitle="About Us">
       <div className="max-w-lg mx-auto p-4 space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">About Us</h1>
-            <p className="text-sm text-muted-foreground">Learn about our platform</p>
-          </div>
-        </div>
-
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 text-white space-y-2">
             <h2 className="text-2xl font-bold">Doom</h2>
