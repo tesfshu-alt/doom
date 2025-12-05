@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { useQuery } from "@tanstack/react-query";
 import { toZonedTime } from "date-fns-tz";
+import { maskAccountNumber } from "@/lib/maskUtils";
 
 const Withdrawal = () => {
   const { user } = useAuth();
@@ -239,7 +240,7 @@ const Withdrawal = () => {
                     <SelectContent>
                       {bankAccounts?.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.bank_name} - {account.account_number}
+                          {account.bank_name} - {maskAccountNumber(account.account_number)}
                         </SelectItem>
                       ))}
                     </SelectContent>
