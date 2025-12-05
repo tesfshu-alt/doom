@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, Users, User, CreditCard, Wallet, TrendingUp, MessageCircle, History, Headphones, FileText, Info, ChevronLeft, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import { useMainBalance } from "@/hooks/useMainBalance";
 import WelcomePopup from "@/components/WelcomePopup";
 import BonusCodeClaim from "@/components/BonusCodeClaim";
 import heroBg from "@/assets/hero-bg.jpg";
@@ -52,7 +52,7 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
-  const { data: availableBalance } = useAvailableBalance(user?.id);
+  const { data: mainBalance } = useMainBalance(user?.id);
 
   const { data: telegramContact } = useQuery({
     queryKey: ['telegram-contact'],
@@ -80,6 +80,7 @@ const Dashboard = () => {
         queryClient.invalidateQueries({ queryKey: ['activeProducts', user.id] });
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['mainBalance', user.id] });
         queryClient.invalidateQueries({ queryKey: ['availableBalance', user.id] });
       })
       .subscribe();
@@ -164,7 +165,7 @@ const Dashboard = () => {
           <Card className="shadow-elevated bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-900 border-2 border-emerald-500/30 animate-scale-in">
             <CardContent className="p-6 text-center space-y-2">
               <p className="text-sm text-emerald-300/90">Available Balance</p>
-              <p className="text-4xl font-bold text-white">ETB {(availableBalance || 0).toFixed(2)}</p>
+              <p className="text-4xl font-bold text-white">ETB {(mainBalance || 0).toFixed(2)}</p>
             </CardContent>
           </Card>
 
