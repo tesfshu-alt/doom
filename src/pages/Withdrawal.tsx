@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { useQuery } from "@tanstack/react-query";
 import { toZonedTime } from "date-fns-tz";
-import { maskAccountNumber } from "@/lib/maskUtils";
 
 const Withdrawal = () => {
   const { user } = useAuth();
@@ -126,14 +125,24 @@ const Withdrawal = () => {
         throw new Error('Insufficient balance');
       }
 
-      const { error } = await supabase.from('withdrawals').insert({
+      const { error: withdrawalError } = await supabase.from('withdrawals').insert({
         user_id: user?.id,
         bank_account_id: selectedBankId,
         amount: withdrawalAmount,
         status: 'pending',
       });
 
-      if (error) throw error;
+      if (withdrawalError) throw withdrawalError;
+
+      // Debit the balance immediately by creating a withdrawal transaction
+      const { error: transactionError } = await supabase.from('transactions').insert({
+        user_id: user?.id,
+        amount: -withdrawalAmount,
+        type: 'withdrawal',
+        description: `Withdrawal request for ETB ${withdrawalAmount.toFixed(2)}`,
+      });
+
+      if (transactionError) throw transactionError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
@@ -240,7 +249,7 @@ const Withdrawal = () => {
                     <SelectContent>
                       {bankAccounts?.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.bank_name} - {maskAccountNumber(account.account_number)}
+                          {account.bank_name} - {account.account_number}
                         </SelectItem>
                       ))}
                     </SelectContent>

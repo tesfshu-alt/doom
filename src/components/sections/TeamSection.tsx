@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Users, Calendar, Gift, CheckCircle2, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Progress } from "@/components/ui/progress";
-import { maskPhoneNumber } from "@/lib/maskUtils";
 
 const TeamSection = () => {
   const { user } = useAuth();
@@ -144,7 +143,7 @@ const TeamSection = () => {
                         <Users className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm">{maskPhoneNumber(referral.phone_number)}</p>
+                        <p className="font-semibold text-sm">{referral.phone_number}</p>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
                           <span>{format(new Date(referral.created_at), 'MMM dd, yyyy')}</span>
