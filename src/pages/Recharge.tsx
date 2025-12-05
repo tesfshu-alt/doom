@@ -16,10 +16,24 @@ const Recharge = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [amount, setAmount] = useState("");
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [payerAccountNumber, setPayerAccountNumber] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [transactionId, setTransactionId] = useState("");
+
+  const { data: products } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: adminBank } = useQuery({
     queryKey: ['adminBank'],
@@ -28,7 +42,7 @@ const Recharge = () => {
         .from('admin_bank_info')
         .select('*')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
@@ -61,7 +75,7 @@ const Recharge = () => {
   const createRechargeMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
-      if (!amount || Number(amount) <= 0) throw new Error('Please enter a valid amount');
+      if (!selectedAmount) throw new Error('Please select an amount');
       if (!payerAccountNumber.trim()) throw new Error('Please enter payer account number');
       if (!buyerName.trim()) throw new Error('Please enter buyer name');
       if (!transactionId.trim()) throw new Error('Please enter transaction ID');
@@ -71,7 +85,7 @@ const Recharge = () => {
         .insert({
           user_id: user.id,
           product_id: null,
-          amount: Number(amount),
+          amount: selectedAmount,
           status: 'pending',
           payer_account_name: `${buyerName.trim()} (${payerAccountNumber.trim()})`,
           transaction_id: transactionId.trim(),
@@ -85,7 +99,7 @@ const Recharge = () => {
         title: "Success!",
         description: "Your recharge request has been submitted. Please wait for admin approval.",
       });
-      setAmount("");
+      setSelectedAmount(null);
       setBuyerName("");
       setPayerAccountNumber("");
       setTransactionId("");
@@ -113,6 +127,9 @@ const Recharge = () => {
       description: `${label} copied to clipboard`,
     });
   };
+
+  // Get unique product prices
+  const rechargeAmounts = products?.map(p => p.price) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,7 +159,7 @@ const Recharge = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(adminBank.bank_name, 'Bank name')}
+                        onClick={() => copyToClipboard(adminBank.bank_name || '', 'Bank name')}
                         className="text-white hover:bg-white/20"
                       >
                         <Copy className="h-4 w-4" />
@@ -195,7 +212,11 @@ const Recharge = () => {
             <div className="space-y-2 text-white/90 text-sm">
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>Transfer your desired amount to the account above</p>
+                <p>Select a recharge amount (matches product prices)</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <p>Transfer the exact amount to the account above</p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -212,18 +233,31 @@ const Recharge = () => {
         <Card className="shadow-card">
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="amount" className="text-base font-semibold">
-                Amount (ETB) *
+              <Label className="text-base font-semibold">
+                Select Amount (ETB) *
               </Label>
-              <Input
-                id="amount"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="Enter amount to recharge"
-                min="1"
-                required
-              />
+              <div className="grid grid-cols-2 gap-2">
+                {rechargeAmounts.map((amount) => (
+                  <Button
+                    key={amount}
+                    type="button"
+                    variant={selectedAmount === amount ? "default" : "outline"}
+                    className={`h-12 text-lg font-semibold ${
+                      selectedAmount === amount 
+                        ? "bg-primary text-primary-foreground" 
+                        : "hover:bg-primary/10"
+                    }`}
+                    onClick={() => setSelectedAmount(Number(amount))}
+                  >
+                    ETB {Number(amount).toLocaleString()}
+                  </Button>
+                ))}
+              </div>
+              {rechargeAmounts.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No products available. Please contact admin.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -281,10 +315,10 @@ const Recharge = () => {
 
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !amount || !payerAccountNumber.trim() || !buyerName.trim() || !transactionId.trim()}
+            disabled={isSubmitting || !selectedAmount || !payerAccountNumber.trim() || !buyerName.trim() || !transactionId.trim()}
             className="w-full h-12 text-lg"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Recharge Request'}
+            {isSubmitting ? 'Submitting...' : `Submit Recharge Request (ETB ${selectedAmount?.toLocaleString() || '0'})`}
           </Button>
         </div>
       </main>
