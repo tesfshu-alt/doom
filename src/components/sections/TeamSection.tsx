@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Users, Calendar, Gift, CheckCircle2, Clock } from "lucide-react";
+import { Copy, Users, Calendar, Gift, CheckCircle2, Clock, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { Progress } from "@/components/ui/progress";
+import doomLogo from "@/assets/doom-logo.png";
 
 const TeamSection = () => {
   const { user } = useAuth();
@@ -61,10 +62,29 @@ const TeamSection = () => {
   });
 
   const referralLink = profile ? `${window.location.origin}/auth?ref=${profile.referral_code}` : '';
+  const shareMessage = `🚗 Your dream is here, join us now!\n\nStart earning daily income with DOOM - the ultimate car investment platform.\n\n👉 ${referralLink}`;
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink);
     toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+  };
+
+  const shareReferralLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'DOOM - Your Dream is Here',
+          text: shareMessage,
+        });
+        toast({ title: "Shared!", description: "Referral link shared successfully" });
+      } catch (error) {
+        // User cancelled or share failed, fall back to copy
+        copyReferralLink();
+      }
+    } else {
+      navigator.clipboard.writeText(shareMessage);
+      toast({ title: "Copied!", description: "Referral message copied to clipboard" });
+    }
   };
 
   return (
@@ -74,8 +94,16 @@ const TeamSection = () => {
         <p className="text-sm text-muted-foreground">Build your network and earn rewards</p>
       </div>
 
-      <Card className="shadow-elevated bg-gradient-primary">
-        <CardContent className="p-4 space-y-3">
+      <Card className="shadow-elevated bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-900 border-2 border-emerald-500/30">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center gap-3">
+            <img src={doomLogo} alt="Doom" className="w-16 h-16 object-contain" />
+            <div className="text-white">
+              <p className="text-lg font-bold">Your Dream is Here!</p>
+              <p className="text-xs text-emerald-300">Share & Earn with DOOM</p>
+            </div>
+          </div>
+          
           <div className="flex items-center justify-between">
             <div className="text-white">
               <p className="text-xs opacity-80">Your Referral Code</p>
@@ -85,13 +113,21 @@ const TeamSection = () => {
               <Copy className="h-4 w-4" />
             </Button>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded p-2">
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded p-2">
             <p className="text-white text-xs break-all">{referralLink}</p>
           </div>
-          <Button variant="secondary" size="sm" className="w-full" onClick={copyReferralLink}>
-            <Copy className="mr-2 h-4 w-4" />
-            Copy Link
-          </Button>
+          
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" className="flex-1" onClick={copyReferralLink}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Link
+            </Button>
+            <Button size="sm" className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600" onClick={shareReferralLink}>
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
