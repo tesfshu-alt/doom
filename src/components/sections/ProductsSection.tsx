@@ -52,14 +52,37 @@ const ProductsSection = () => {
     mutationFn: async (product: any) => {
       if (!user) throw new Error('Not authenticated');
       
-      // Check if user already owns this product
-      if (userProducts?.includes(product.id)) {
+      // Check if user already owns this product - fetch fresh data
+      const { data: existingProducts } = await supabase
+        .from('user_products')
+        .select('product_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+      
+      if (existingProducts?.some(up => up.product_id === product.id)) {
         throw new Error('You already own this product. It is currently working and generating income for you.');
       }
       
-      const balance = mainBalance || 0;
-      if (balance < product.price) {
-        throw new Error(`Insufficient balance. You need ETB ${product.price} but have ETB ${balance.toFixed(2)}`);
+      // Fetch fresh balance from transactions table
+      const { data: transactions, error: txFetchError } = await supabase
+        .from('transactions')
+        .select('amount, type')
+        .eq('user_id', user.id);
+      
+      if (txFetchError) throw txFetchError;
+      
+      const freshBalance = (transactions || []).reduce((sum, tx) => {
+        if (['recharge', 'daily_income', 'referral_bonus', 'welcome_bonus'].includes(tx.type)) {
+          return sum + Number(tx.amount);
+        }
+        if (['purchase', 'withdrawal'].includes(tx.type)) {
+          return sum - Number(tx.amount);
+        }
+        return sum;
+      }, 0);
+      
+      if (freshBalance < product.price) {
+        throw new Error(`Insufficient balance. You need ETB ${product.price} but have ETB ${freshBalance.toFixed(2)}. Please recharge first.`);
       }
 
       // Create purchase transaction
