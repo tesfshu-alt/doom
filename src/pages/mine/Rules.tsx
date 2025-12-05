@@ -1,12 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 
 const Rules = () => {
-  const navigate = useNavigate();
-
   const sections = [
     {
       title: "Account Rules",
@@ -47,18 +43,8 @@ const Rules = () => {
   ];
 
   return (
-    <Layout>
+    <Layout showBackOnly pageTitle="Platform Rules">
       <div className="max-w-lg mx-auto p-4 space-y-6 pb-24">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Platform Rules</h1>
-            <p className="text-sm text-muted-foreground">Terms and conditions</p>
-          </div>
-        </div>
-
         <div className="space-y-4">
           {sections.map((section, index) => (
             <Card key={index} className="shadow-card">
