@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Key, Copy, Check } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { maskPhoneNumber } from "@/lib/maskUtils";
 
 const AdminPasswordReset = () => {
   const { toast } = useToast();
@@ -151,7 +150,7 @@ const AdminPasswordReset = () => {
             <div className="space-y-2">
               <h3 className="font-semibold text-lg">User Found</h3>
               <div className="grid gap-1 text-sm">
-                <p><span className="text-muted-foreground">Phone:</span> <span className="font-mono">{maskPhoneNumber(foundUser.phone_number)}</span></p>
+                <p><span className="text-muted-foreground">Phone:</span> <span className="font-mono">{foundUser.phone_number}</span></p>
                 <p><span className="text-muted-foreground">User ID:</span> <span className="font-mono text-xs">{foundUser.id}</span></p>
               </div>
             </div>
