@@ -3,11 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import { useToast } from "@/hooks/use-toast";
-import { Package, TrendingUp, Calendar, DollarSign, Calculator } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Package, TrendingUp, Calendar, DollarSign, CheckCircle, Lock } from "lucide-react";
 import package1 from "@/assets/products/package-1.jpg";
 import package2 from "@/assets/products/package-2.jpg";
 import package3 from "@/assets/products/package-3.jpg";
@@ -20,8 +20,6 @@ const ProductsSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   
   const productImages = [package1, package2, package3, package4, package5, package6, package7];
 
@@ -34,6 +32,20 @@ const ProductsSection = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: userProducts } = useQuery({
+    queryKey: ['userProducts', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_products')
+        .select('product_id')
+        .eq('user_id', user?.id)
+        .eq('is_active', true);
+      if (error) throw error;
+      return data?.map(up => up.product_id) || [];
+    },
+    enabled: !!user,
   });
 
   const buyProductMutation = useMutation({
@@ -86,6 +98,7 @@ const ProductsSection = () => {
       queryClient.invalidateQueries({ queryKey: ['mainBalance'] });
       queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
       queryClient.invalidateQueries({ queryKey: ['activeProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
       toast({
         title: "Product Purchased!",
         description: `You have successfully purchased ${product.name}. It will start generating income.`,
@@ -104,18 +117,8 @@ const ProductsSection = () => {
     buyProductMutation.mutate(product);
   };
 
-  const handleCalculate = (product: any) => {
-    setSelectedProduct(product);
-    setIsCalculatorOpen(true);
-  };
-
-  const calculateEarnings = (product: any) => {
-    const dailyIncome = Number(product.daily_income);
-    const validityDays = product.validity_days;
-    const totalIncome = dailyIncome * validityDays;
-    const profit = totalIncome - Number(product.price);
-    const roi = ((profit / Number(product.price)) * 100).toFixed(2);
-    return { dailyIncome, validityDays, totalIncome, profit, roi };
+  const isProductOwned = (productId: string) => {
+    return userProducts?.includes(productId) || false;
   };
 
   if (isLoading) {
@@ -145,17 +148,34 @@ const ProductsSection = () => {
           const isPremium = index >= 4;
           const imageUrl = product.image_url || productImages[index] || productImages[0];
           const canAfford = (mainBalance || 0) >= product.price;
+          const owned = isProductOwned(product.id);
           return (
-            <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all animate-fade-in ${isPremium ? 'border-accent border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
+            <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all animate-fade-in ${isPremium ? 'border-accent border-2' : ''} ${owned ? 'border-emerald-500 border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
               <CardContent className="p-0">
                 <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
                   <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                  {isPremium && <span className="absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded bg-gradient-gold text-foreground">Premium</span>}
+                  {isPremium && !owned && <span className="absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded bg-gradient-gold text-foreground">Premium</span>}
+                  {owned && (
+                    <div className="absolute inset-0 bg-emerald-950/60 flex items-center justify-center">
+                      <Badge className="bg-emerald-500 text-white text-lg px-4 py-2">
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Working
+                      </Badge>
+                    </div>
+                  )}
+                  {!owned && (
+                    <div className="absolute top-2 left-2">
+                      <Badge variant="secondary" className="bg-gray-800/80 text-gray-300">
+                        <Lock className="h-3 w-3 mr-1" />
+                        Locked
+                      </Badge>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Package className={`h-5 w-5 ${isPremium ? 'text-accent' : 'text-primary'}`} />
+                      <Package className={`h-5 w-5 ${owned ? 'text-emerald-500' : isPremium ? 'text-accent' : 'text-primary'}`} />
                       <h3 className="font-bold">{product.name}</h3>
                     </div>
                     <p className="text-xl font-bold text-primary">ETB {product.price}</p>
@@ -179,68 +199,22 @@ const ProductsSection = () => {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0 flex gap-2">
-                <Dialog open={isCalculatorOpen && selectedProduct?.id === product.id} onOpenChange={setIsCalculatorOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => handleCalculate(product)} variant="outline" size="sm" className="flex-1">
-                      <Calculator className="h-4 w-4 mr-1" />
-                      Calculate
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-sm">
-                    <DialogHeader>
-                      <DialogTitle>Earnings Calculator</DialogTitle>
-                    </DialogHeader>
-                    {selectedProduct && (
-                      <div className="space-y-3">
-                        <Card className="bg-gradient-primary">
-                          <CardContent className="p-4 space-y-2 text-white text-sm">
-                            <div className="flex justify-between border-b border-white/20 pb-2">
-                              <span className="text-white/80">Investment</span>
-                              <span className="font-bold">ETB {selectedProduct.price}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/20 pb-2">
-                              <span className="text-white/80">Daily Income</span>
-                              <span className="font-bold text-accent">ETB {calculateEarnings(selectedProduct).dailyIncome}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/20 pb-2">
-                              <span className="text-white/80">Period</span>
-                              <span className="font-semibold">{calculateEarnings(selectedProduct).validityDays} days</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/20 pb-2">
-                              <span className="text-white/80">Total Return</span>
-                              <span className="font-bold">ETB {calculateEarnings(selectedProduct).totalIncome}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/20 pb-2">
-                              <span className="text-white/80">Net Profit</span>
-                              <span className="font-bold text-green-300">ETB {calculateEarnings(selectedProduct).profit}</span>
-                            </div>
-                            <div className="flex justify-between pt-1">
-                              <span className="text-white/80">ROI</span>
-                              <span className="font-bold text-xl text-accent">{calculateEarnings(selectedProduct).roi}%</span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                        <Button 
-                          onClick={() => { setIsCalculatorOpen(false); handleBuyProduct(selectedProduct); }} 
-                          className="w-full"
-                          disabled={!canAfford || buyProductMutation.isPending}
-                        >
-                          {buyProductMutation.isPending ? 'Processing...' : canAfford ? 'Buy Now' : 'Insufficient Balance'}
-                        </Button>
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
-                <Button 
-                  onClick={() => handleBuyProduct(product)} 
-                  size="sm" 
-                  className="flex-1" 
-                  variant={isPremium ? "default" : "outline"}
-                  disabled={!canAfford || buyProductMutation.isPending}
-                >
-                  {buyProductMutation.isPending ? 'Processing...' : canAfford ? 'Buy Now' : 'Recharge First'}
-                </Button>
+              <CardFooter className="p-4 pt-0">
+                {owned ? (
+                  <Button disabled className="w-full bg-emerald-600 hover:bg-emerald-600">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Working - Generating Income
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleBuyProduct(product)} 
+                    className="w-full" 
+                    variant={isPremium ? "default" : "outline"}
+                    disabled={!canAfford || buyProductMutation.isPending}
+                  >
+                    {buyProductMutation.isPending ? 'Processing...' : canAfford ? 'Buy Now' : 'Recharge First'}
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           );

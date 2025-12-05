@@ -207,7 +207,7 @@ const Admin = () => {
       const userIds = data?.map(r => r.user_id) || [];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, phone_number')
+        .select('id, phone_number, full_name')
         .in('id', userIds);
       
       return data?.map(recharge => ({
@@ -462,7 +462,8 @@ const Admin = () => {
                           <Users className="h-5 w-5 text-white" />
                         </div>
                         <div className="space-y-1">
-                          <p className="font-semibold text-lg">{user.phone_number}</p>
+                          <p className="font-semibold text-lg">{user.full_name || 'No Name'}</p>
+                          <p className="text-sm text-muted-foreground">{user.phone_number}</p>
                           <div className="flex flex-wrap gap-2 text-sm">
                             <Badge variant="outline">Code: {user.referral_code}</Badge>
                             <span className="text-muted-foreground">
@@ -480,7 +481,7 @@ const Admin = () => {
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>User History - {user.phone_number}</DialogTitle>
+                            <DialogTitle>User History - {user.full_name || user.phone_number}</DialogTitle>
                           </DialogHeader>
                           <UserHistoryContent userId={user.id} />
                         </DialogContent>
