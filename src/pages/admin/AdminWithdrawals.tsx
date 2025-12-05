@@ -41,7 +41,7 @@ const AdminWithdrawals = () => {
       const userIds = data?.map(w => w.user_id) || [];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, phone_number')
+        .select('id, phone_number, full_name')
         .in('id', userIds);
       
       // Fetch user types from most recent approved recharge
@@ -165,7 +165,7 @@ const AdminWithdrawals = () => {
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-lg">
-                      {withdrawal.profile?.phone_number || 'Unknown User'}
+                      {withdrawal.profile?.full_name || 'No Name'}
                     </p>
                     <Badge>Pending</Badge>
                     {withdrawal.user_type && (
@@ -175,6 +175,9 @@ const AdminWithdrawals = () => {
                     )}
                   </div>
                   <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                      Phone: {withdrawal.profile?.phone_number || 'Unknown'}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Bank: {withdrawal.bank_accounts?.bank_name}
                     </p>

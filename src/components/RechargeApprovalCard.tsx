@@ -22,9 +22,10 @@ const RechargeApprovalCard = ({ recharge, onApprove, onReject, isLoading }: Rech
         <div className="flex flex-col gap-4">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-lg">{recharge.profile?.phone_number || 'Unknown User'}</p>
+              <p className="font-semibold text-lg">{recharge.profile?.full_name || 'No Name'}</p>
               <Badge>Pending</Badge>
             </div>
+            <p className="text-sm text-muted-foreground">{recharge.profile?.phone_number || 'Unknown'}</p>
             <p className="text-sm text-muted-foreground">
               {recharge.products?.name || 'Balance Recharge'}
             </p>
