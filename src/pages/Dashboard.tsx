@@ -4,7 +4,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Users, User, CreditCard, Wallet, TrendingUp, MessageCircle, History, Headphones, FileText, Info, ChevronLeft, Shield } from "lucide-react";
+import { Package, Users, User, CreditCard, Wallet, TrendingUp, MessageCircle, History, Headphones, FileText, Info, ChevronLeft, Shield, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import WelcomePopup from "@/components/WelcomePopup";
@@ -46,6 +48,26 @@ const Dashboard = () => {
     queryKey: ['activeProducts', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.from('user_products').select('*, products(*)').eq('user_id', user?.id).eq('is_active', true);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: latestRecharge } = useQuery({
+    queryKey: ['latestRecharge', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('recharges').select('*, products(name)').eq('user_id', user?.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: latestWithdrawal } = useQuery({
+    queryKey: ['latestWithdrawal', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('withdrawals').select('*').eq('user_id', user?.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -190,6 +212,103 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Recharge/Product Status */}
+          {latestRecharge && (
+            <Alert className={`border-l-4 animate-fade-in ${
+              latestRecharge.status === 'approved' 
+                ? 'bg-emerald-950/50 border-emerald-500' 
+                : latestRecharge.status === 'rejected'
+                ? 'bg-red-950/50 border-red-500'
+                : 'bg-yellow-950/50 border-yellow-500'
+            }`}>
+              <div className="flex items-center gap-2">
+                {latestRecharge.status === 'approved' ? (
+                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                ) : latestRecharge.status === 'rejected' ? (
+                  <XCircle className="h-5 w-5 text-red-400" />
+                ) : (
+                  <Clock className="h-5 w-5 text-yellow-400" />
+                )}
+                <AlertDescription className={`font-medium ${
+                  latestRecharge.status === 'approved' 
+                    ? 'text-emerald-200' 
+                    : latestRecharge.status === 'rejected'
+                    ? 'text-red-200'
+                    : 'text-yellow-200'
+                }`}>
+                  {latestRecharge.status === 'approved' 
+                    ? `Product Working - ${latestRecharge.products?.name || 'Your package'} is generating income!` 
+                    : latestRecharge.status === 'rejected'
+                    ? 'Recharge Rejected - Please pay the product amount before requesting.'
+                    : 'Recharge Pending - Waiting for admin approval.'}
+                </AlertDescription>
+              </div>
+            </Alert>
+          )}
+
+          {/* Withdrawal Status */}
+          {latestWithdrawal && (
+            <Card className={`shadow-card animate-fade-in border-l-4 ${
+              latestWithdrawal.status === 'approved' 
+                ? 'bg-emerald-950/50 border-emerald-500' 
+                : latestWithdrawal.status === 'rejected'
+                ? 'bg-red-950/50 border-red-500'
+                : 'bg-blue-950/50 border-blue-500'
+            }`}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {latestWithdrawal.status === 'approved' ? (
+                      <CheckCircle className="h-5 w-5 text-emerald-400" />
+                    ) : latestWithdrawal.status === 'rejected' ? (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    ) : (
+                      <Clock className="h-5 w-5 text-blue-400" />
+                    )}
+                    <span className="font-semibold text-white">Withdrawal Status</span>
+                  </div>
+                  <span className={`text-sm font-medium px-2 py-1 rounded ${
+                    latestWithdrawal.status === 'approved' 
+                      ? 'bg-emerald-500/20 text-emerald-300' 
+                      : latestWithdrawal.status === 'rejected'
+                      ? 'bg-red-500/20 text-red-300'
+                      : 'bg-blue-500/20 text-blue-300'
+                  }`}>
+                    {latestWithdrawal.status.toUpperCase()}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Amount: ETB {Number(latestWithdrawal.amount).toFixed(2)}</span>
+                  </div>
+                  <Progress 
+                    value={latestWithdrawal.status === 'approved' ? 100 : latestWithdrawal.status === 'rejected' ? 0 : 50} 
+                    className={`h-2 ${
+                      latestWithdrawal.status === 'approved' 
+                        ? '[&>div]:bg-emerald-500' 
+                        : latestWithdrawal.status === 'rejected'
+                        ? '[&>div]:bg-red-500'
+                        : '[&>div]:bg-blue-500'
+                    }`}
+                  />
+                  <p className={`text-xs ${
+                    latestWithdrawal.status === 'approved' 
+                      ? 'text-emerald-300' 
+                      : latestWithdrawal.status === 'rejected'
+                      ? 'text-red-300'
+                      : 'text-blue-300'
+                  }`}>
+                    {latestWithdrawal.status === 'approved' 
+                      ? 'Congratulations! Your withdrawal has been approved and will be transferred shortly.' 
+                      : latestWithdrawal.status === 'rejected'
+                      ? latestWithdrawal.rejection_reason || 'Your withdrawal was rejected. Please contact support.'
+                      : 'Your withdrawal is being processed. Please wait for admin approval.'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Admin Panel Shortcut */}
           {isAdmin && (
