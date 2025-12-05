@@ -17,6 +17,7 @@ const Auth = () => {
   const [loginPassword, setLoginPassword] = useState("");
   const [signupPhone, setSignupPhone] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [signupFullName, setSignupFullName] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [isReferralFromLink, setIsReferralFromLink] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -64,9 +65,18 @@ const Auth = () => {
       return;
     }
 
+    if (!signupFullName || signupFullName.trim() === "") {
+      toast({
+        variant: "destructive",
+        title: "Full Name Required",
+        description: "Please enter your full name.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    const { error } = await signUp(signupPhone, signupPassword, referralCode);
+    const { error } = await signUp(signupPhone, signupPassword, referralCode, signupFullName);
 
     if (error) {
       toast({
@@ -138,6 +148,17 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-fullname">Full Name <span className="text-destructive">*</span></Label>
+                  <Input
+                    id="signup-fullname"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={signupFullName}
+                    onChange={(e) => setSignupFullName(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-phone">Phone Number</Label>
                   <Input

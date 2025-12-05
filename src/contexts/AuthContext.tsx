@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  signUp: (phoneNumber: string, password: string, referralCode: string) => Promise<{ error: any }>;
+  signUp: (phoneNumber: string, password: string, referralCode: string, fullName: string) => Promise<{ error: any }>;
   signIn: (phoneNumber: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const signUp = async (phoneNumber: string, password: string, referralCode: string) => {
+  const signUp = async (phoneNumber: string, password: string, referralCode: string, fullName: string) => {
     const email = `${phoneNumber}@platform.local`;
     const redirectUrl = `${window.location.origin}/`;
     
@@ -83,18 +83,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: { message: "Referral code is required to sign up" } };
     }
 
-    console.log('Validating referral code:', referralCode.trim());
-
     const { data: referrer, error: referrerError } = await supabase
       .from('profiles')
       .select('id')
       .ilike('referral_code', referralCode.trim())
       .maybeSingle();
     
-    console.log('Referral lookup result:', { referrer, referrerError });
-    
     if (referrerError) {
-      console.error('Database error looking up referral code:', referrerError);
       return { error: { message: `Database error: ${referrerError.message}` } };
     }
     
@@ -110,6 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: {
           phone_number: phoneNumber,
           referred_by: referrer.id,
+          full_name: fullName.trim(),
         },
       },
     });

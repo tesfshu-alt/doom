@@ -182,7 +182,7 @@ const Dashboard = () => {
         <div className={`max-w-lg mx-auto p-4 space-y-6 ${showHero ? '' : 'pt-6'}`}>
           {/* Welcome & Balance */}
           <div className="space-y-2 animate-fade-in">
-            <h2 className="text-xl font-bold">Welcome, {maskPhoneNumber(profile?.phone_number)}</h2>
+            <h2 className="text-xl font-bold">Welcome, {profile?.full_name || maskPhoneNumber(profile?.phone_number)}</h2>
           </div>
 
           <Card className="shadow-elevated bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-900 border-2 border-emerald-500/30 animate-scale-in">

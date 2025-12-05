@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Check, X } from "lucide-react";
 import { format } from "date-fns";
-import { maskPhoneNumber } from "@/lib/maskUtils";
 
 interface RechargeApprovalCardProps {
   recharge: any;
@@ -23,7 +22,7 @@ const RechargeApprovalCard = ({ recharge, onApprove, onReject, isLoading }: Rech
         <div className="flex flex-col gap-4">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-lg">{maskPhoneNumber(recharge.profile?.phone_number)}</p>
+              <p className="font-semibold text-lg">{recharge.profile?.phone_number || 'Unknown User'}</p>
               <Badge>Pending</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
