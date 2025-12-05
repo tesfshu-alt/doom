@@ -35,6 +35,20 @@ const Recharge = () => {
     },
   });
 
+  const { data: userProducts } = useQuery({
+    queryKey: ['userProducts', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_products')
+        .select('product_id')
+        .eq('user_id', user?.id)
+        .eq('is_active', true);
+      if (error) throw error;
+      return data?.map(up => up.product_id) || [];
+    },
+    enabled: !!user,
+  });
+
   const { data: adminBank } = useQuery({
     queryKey: ['adminBank'],
     queryFn: async () => {
@@ -128,8 +142,9 @@ const Recharge = () => {
     });
   };
 
-  // Get unique product prices
-  const rechargeAmounts = products?.map(p => p.price) || [];
+  // Get product prices for products user doesn't already own
+  const availableProducts = products?.filter(p => !userProducts?.includes(p.id)) || [];
+  const rechargeAmounts = availableProducts.map(p => p.price);
 
   return (
     <div className="min-h-screen bg-background">
