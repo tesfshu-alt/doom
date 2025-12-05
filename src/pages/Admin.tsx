@@ -27,6 +27,7 @@ import AdminBonusCodes from "./admin/AdminBonusCodes";
 import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 import AdminPlatformSettings from "./admin/AdminPlatformSettings";
 import RechargeApprovalCard from "@/components/RechargeApprovalCard";
+import { maskPhoneNumber, maskAccountNumber } from "@/lib/maskUtils";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
   const { data: userRecharges } = useQuery({
@@ -149,7 +150,7 @@ const UserHistoryContent = ({ userId }: { userId: string }) => {
                         {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}
                       </p>
                       <p className="text-xs">
-                        {withdrawal.bank_accounts.bank_name} - {withdrawal.bank_accounts.account_number}
+                        {withdrawal.bank_accounts.bank_name} - {maskAccountNumber(withdrawal.bank_accounts.account_number)}
                       </p>
                       <Badge className={getStatusColor(withdrawal.status)} variant="outline">
                         {withdrawal.status}
@@ -462,7 +463,7 @@ const Admin = () => {
                           <Users className="h-5 w-5 text-white" />
                         </div>
                         <div className="space-y-1">
-                          <p className="font-semibold text-lg">{user.phone_number}</p>
+                          <p className="font-semibold text-lg">{maskPhoneNumber(user.phone_number)}</p>
                           <div className="flex flex-wrap gap-2 text-sm">
                             <Badge variant="outline">Code: {user.referral_code}</Badge>
                             <span className="text-muted-foreground">
@@ -480,7 +481,7 @@ const Admin = () => {
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>User History - {user.phone_number}</DialogTitle>
+                            <DialogTitle>User History - {maskPhoneNumber(user.phone_number)}</DialogTitle>
                           </DialogHeader>
                           <UserHistoryContent userId={user.id} />
                         </DialogContent>

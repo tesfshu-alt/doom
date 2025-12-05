@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Check, X, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import { maskPhoneNumber, maskAccountNumber } from "@/lib/maskUtils";
 
 const AdminWithdrawals = () => {
   const { user } = useAuth();
@@ -165,7 +166,7 @@ const AdminWithdrawals = () => {
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-lg">
-                      {withdrawal.profile?.phone_number || 'Unknown User'}
+                      {maskPhoneNumber(withdrawal.profile?.phone_number)}
                     </p>
                     <Badge>Pending</Badge>
                     {withdrawal.user_type && (
@@ -179,7 +180,7 @@ const AdminWithdrawals = () => {
                       Bank: {withdrawal.bank_accounts?.bank_name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Account: {withdrawal.bank_accounts?.account_number}
+                      Account: {maskAccountNumber(withdrawal.bank_accounts?.account_number)}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Name: {withdrawal.bank_accounts?.account_name}

@@ -8,6 +8,7 @@ import Layout from "@/components/Layout";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { maskAccountNumber } from "@/lib/maskUtils";
 
 const Records = () => {
   const { user } = useAuth();
@@ -229,7 +230,7 @@ const Records = () => {
                           </div>
                           <div className="space-y-1 flex-1 min-w-0">
                             <p className="font-semibold truncate">
-                              {withdrawal.bank_accounts?.bank_name} - {withdrawal.bank_accounts?.account_number}
+                              {withdrawal.bank_accounts?.bank_name} - {maskAccountNumber(withdrawal.bank_accounts?.account_number)}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               <span className="font-medium">Request:</span> {format(new Date(withdrawal.created_at), 'MMM dd, yyyy HH:mm')}

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import Layout from "@/components/Layout";
+import { maskAccountNumber } from "@/lib/maskUtils";
 
 const BankAccounts = () => {
   const { user } = useAuth();
@@ -172,7 +173,7 @@ const BankAccounts = () => {
                     <div className="flex-1 space-y-1">
                       <p className="font-semibold">{account.bank_name}</p>
                       <p className="text-sm text-muted-foreground">{account.account_name}</p>
-                      <p className="text-sm font-mono">{account.account_number}</p>
+                      <p className="text-sm font-mono">{maskAccountNumber(account.account_number)}</p>
                     </div>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
