@@ -8,20 +8,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import { useToast } from "@/hooks/use-toast";
 import { Package, TrendingUp, Calendar, DollarSign, CheckCircle, Lock } from "lucide-react";
-import package1 from "@/assets/products/package-1.jpg";
-import package2 from "@/assets/products/package-2.jpg";
-import package3 from "@/assets/products/package-3.jpg";
-import package4 from "@/assets/products/package-4.jpg";
-import package5 from "@/assets/products/package-5.jpg";
-import package6 from "@/assets/products/package-6.jpg";
-import package7 from "@/assets/products/package-7.jpg";
+import car1 from "@/assets/products/car-1.jpg";
+import car2 from "@/assets/products/car-2.jpg";
+import car3 from "@/assets/products/car-3.jpg";
+import car4 from "@/assets/products/car-4.jpg";
+import car5 from "@/assets/products/car-5.jpg";
+import car6 from "@/assets/products/car-6.jpg";
+import car7 from "@/assets/products/car-7.jpg";
 
 const ProductsSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const productImages = [package1, package2, package3, package4, package5, package6, package7];
+  const productImages = [car1, car2, car3, car4, car5, car6, car7];
 
   const { data: mainBalance } = useMainBalance(user?.id);
 
@@ -99,9 +99,10 @@ const ProductsSection = () => {
       queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
       queryClient.invalidateQueries({ queryKey: ['activeProducts'] });
       queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['latestRecharge'] });
       toast({
-        title: "Product Purchased!",
-        description: `You have successfully purchased ${product.name}. It will start generating income.`,
+        title: "Product Working!",
+        description: `${product.name} is now working and generating income for you!`,
       });
     },
     onError: (error) => {
