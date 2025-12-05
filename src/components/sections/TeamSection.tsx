@@ -23,6 +23,7 @@ const TeamSection = () => {
     enabled: !!user,
   });
 
+  // Level 1 referrals (direct)
   const { data: referrals } = useQuery({
     queryKey: ['referrals', user?.id],
     queryFn: async () => {
@@ -37,6 +38,68 @@ const TeamSection = () => {
         })
       );
       return referralsWithStatus;
+    },
+    enabled: !!user,
+  });
+
+  // Level 2 referrals (referrals of my referrals)
+  const { data: level2Referrals } = useQuery({
+    queryKey: ['level2Referrals', user?.id],
+    queryFn: async () => {
+      // Get my direct referrals' IDs
+      const { data: directReferrals } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referred_by', user?.id);
+      
+      if (!directReferrals || directReferrals.length === 0) return [];
+      
+      const directIds = directReferrals.map(r => r.id);
+      
+      // Get users referred by my direct referrals
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('referred_by', directIds);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Level 3 referrals (referrals of level 2)
+  const { data: level3Referrals } = useQuery({
+    queryKey: ['level3Referrals', user?.id],
+    queryFn: async () => {
+      // Get my direct referrals' IDs
+      const { data: directReferrals } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referred_by', user?.id);
+      
+      if (!directReferrals || directReferrals.length === 0) return [];
+      
+      const directIds = directReferrals.map(r => r.id);
+      
+      // Get level 2 IDs
+      const { data: level2 } = await supabase
+        .from('profiles')
+        .select('id')
+        .in('referred_by', directIds);
+      
+      if (!level2 || level2.length === 0) return [];
+      
+      const level2Ids = level2.map(r => r.id);
+      
+      // Get level 3 users
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('referred_by', level2Ids);
+      
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!user,
   });
@@ -136,7 +199,7 @@ const TeamSection = () => {
           <CardContent className="p-3 space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span className="text-xs">Referrals</span>
+              <span className="text-xs">Level 1 (Direct)</span>
             </div>
             <p className="text-2xl font-bold text-primary">{referrals?.length || 0}</p>
           </CardContent>
@@ -145,9 +208,30 @@ const TeamSection = () => {
           <CardContent className="p-3 space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Gift className="h-4 w-4" />
-              <span className="text-xs">Earned</span>
+              <span className="text-xs">Total Earned</span>
             </div>
             <p className="text-2xl font-bold text-accent">ETB {referralEarnings?.total.toFixed(0) || '0'}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="shadow-card">
+          <CardContent className="p-3 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span className="text-xs">Level 2 (3% bonus)</span>
+            </div>
+            <p className="text-2xl font-bold text-primary">{level2Referrals?.length || 0}</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-card">
+          <CardContent className="p-3 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span className="text-xs">Level 3 (1% bonus)</span>
+            </div>
+            <p className="text-2xl font-bold text-primary">{level3Referrals?.length || 0}</p>
           </CardContent>
         </Card>
       </div>
@@ -159,9 +243,10 @@ const TeamSection = () => {
             Bonus Rules
           </h3>
           <div className="space-y-1 text-xs text-muted-foreground">
-            <p>• {referralSettings?.bonus_amount || 0}% from direct referral's first investment</p>
-            <p>• 3% from 2nd level referral's first investment</p>
-            <p>• Min ETB 500 investment required</p>
+            <p>• Level 1: {referralSettings?.bonus_amount || 0}% from direct referral's first investment</p>
+            <p>• Level 2: 3% from 2nd level referral's first investment</p>
+            <p>• Level 3: 1% from 3rd level referral's first investment</p>
+            <p>• Min ETB 500 investment required for bonus eligibility</p>
           </div>
         </CardContent>
       </Card>
