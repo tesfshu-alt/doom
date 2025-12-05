@@ -25,7 +25,9 @@ const RechargeApprovalCard = ({ recharge, onApprove, onReject, isLoading }: Rech
               <p className="font-semibold text-lg">{recharge.profile?.phone_number || 'Unknown User'}</p>
               <Badge>Pending</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{recharge.products?.name}</p>
+            <p className="text-sm text-muted-foreground">
+              {recharge.products?.name || 'Balance Recharge'}
+            </p>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-muted-foreground">Amount: </span>

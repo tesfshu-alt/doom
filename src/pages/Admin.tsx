@@ -110,7 +110,7 @@ const UserHistoryContent = ({ userId }: { userId: string }) => {
                 <CardContent className="p-3">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <p className="font-semibold text-sm">{recharge.products.name}</p>
+                      <p className="font-semibold text-sm">{recharge.products?.name || 'Balance Recharge'}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(recharge.created_at), 'MMM dd, yyyy HH:mm')}
                       </p>
@@ -234,10 +234,7 @@ const Admin = () => {
   const approveMutation = useMutation({
     mutationFn: async ({ rechargeId, userType }: { rechargeId: string; userType: 'promoter' | 'investor' }) => {
       const recharge = pendingRecharges?.find(r => r.id === rechargeId);
-      if (!recharge || !recharge.products) throw new Error('Recharge not found');
-
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + recharge.products.validity_days);
+      if (!recharge) throw new Error('Recharge not found');
 
       // Update recharge status with user_type
       const { error: rechargeError } = await supabase.from('recharges').update({ 
@@ -249,121 +246,100 @@ const Admin = () => {
 
       if (rechargeError) throw rechargeError;
 
-      // Create user product
-      const { error: productError } = await supabase.from('user_products').insert({
-        user_id: recharge.user_id,
-        product_id: recharge.product_id,
-        recharge_id: rechargeId,
-        expiry_date: expiryDate.toISOString(),
-      });
-
-      if (productError) throw productError;
-
-      // Create transaction record
+      // Create recharge transaction to credit balance
       const { error: transactionError } = await supabase.from('transactions').insert({
         user_id: recharge.user_id,
         amount: recharge.amount,
-        type: 'purchase',
-        description: `Purchased ${recharge.products.name}`,
+        type: 'recharge',
+        description: `Balance recharge - ETB ${recharge.amount}`,
       });
 
       if (transactionError) throw transactionError;
 
-      // Check if this is the user's first purchase
-      const { data: previousPurchases } = await supabase
-        .from('user_products')
-        .select('id')
-        .eq('user_id', recharge.user_id);
+      // Track for referral bonus (based on recharge amount, not product purchase)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('referred_by')
+        .eq('id', recharge.user_id)
+        .single();
 
-      const isFirstPurchase = previousPurchases && previousPurchases.length === 1;
+      if (profile?.referred_by && userType === 'investor') {
+        // Check if referred user has invested at least 500 ETB
+        const { data: referralInvestment } = await supabase
+          .from('referral_investments')
+          .select('*')
+          .eq('user_id', recharge.user_id)
+          .eq('referred_by', profile.referred_by)
+          .maybeSingle();
 
-      // If first purchase, check for referral and award bonus
-      if (isFirstPurchase) {
-        // Get user's referral info
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('referred_by')
-          .eq('id', recharge.user_id)
-          .single();
+        const totalInvested = (referralInvestment?.total_invested || 0) + recharge.amount;
 
-        if (profile?.referred_by) {
-          // Check if referred user has invested at least 500 ETB
-          const { data: referralInvestment } = await supabase
+        // Update or create referral investment record
+        if (referralInvestment) {
+          await supabase
             .from('referral_investments')
+            .update({ total_invested: totalInvested })
+            .eq('id', referralInvestment.id);
+        } else {
+          await supabase
+            .from('referral_investments')
+            .insert({
+              user_id: recharge.user_id,
+              referred_by: profile.referred_by,
+              total_invested: totalInvested,
+              bonus_credited: false,
+            });
+        }
+
+        // Only credit bonus if total investment is at least 500 ETB and bonus not yet credited
+        if (totalInvested >= 500 && !referralInvestment?.bonus_credited) {
+          // Get referral settings
+          const { data: referralSettings } = await supabase
+            .from('referral_settings')
             .select('*')
-            .eq('user_id', recharge.user_id)
-            .eq('referred_by', profile.referred_by)
-            .maybeSingle();
+            .single();
 
-          const totalInvested = (referralInvestment?.total_invested || 0) + recharge.amount;
-
-          // Update or create referral investment record
-          if (referralInvestment) {
+          if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
+            // Calculate bonus based on total invested amount
+            const bonusAmount = (totalInvested * referralSettings.bonus_amount) / 100;
+            
+            // Credit referral bonus to the direct referrer (1st level)
             await supabase
-              .from('referral_investments')
-              .update({ total_invested: totalInvested })
-              .eq('id', referralInvestment.id);
-          } else {
-            await supabase
-              .from('referral_investments')
+              .from('transactions')
               .insert({
-                user_id: recharge.user_id,
-                referred_by: profile.referred_by,
-                total_invested: totalInvested,
-                bonus_credited: false,
+                user_id: profile.referred_by,
+                amount: bonusAmount,
+                type: 'referral_bonus',
+                description: `Referral bonus (${referralSettings.bonus_amount}%) for inviting new user`,
               });
-          }
 
-          // Only credit bonus if total investment is at least 500 ETB, bonus not yet credited, and user is approved as investor
-          if (totalInvested >= 500 && !referralInvestment?.bonus_credited && userType === 'investor') {
-            // Get referral settings
-            const { data: referralSettings } = await supabase
-              .from('referral_settings')
-              .select('*')
+            // Mark bonus as credited
+            await supabase
+              .from('referral_investments')
+              .update({ bonus_credited: true })
+              .eq('user_id', recharge.user_id)
+              .eq('referred_by', profile.referred_by);
+
+            // Check for 2nd level referral (referrer's referrer)
+            const { data: referrerProfile } = await supabase
+              .from('profiles')
+              .select('referred_by')
+              .eq('id', profile.referred_by)
               .single();
 
-            if (referralSettings?.enabled && referralSettings.bonus_amount > 0) {
-              // Calculate bonus based on total invested amount (not just current recharge)
-              const bonusAmount = (totalInvested * referralSettings.bonus_amount) / 100;
+            if (referrerProfile?.referred_by) {
+              // Calculate 3% bonus for 2nd level referrer
+              const secondLevelBonus = (totalInvested * 3) / 100;
               
-              // Credit referral bonus to the direct referrer (1st level)
+              // Credit 2nd level referral bonus
               await supabase
                 .from('transactions')
                 .insert({
-                  user_id: profile.referred_by,
-                  amount: bonusAmount,
+                  user_id: referrerProfile.referred_by,
+                  amount: secondLevelBonus,
                   type: 'referral_bonus',
-                  description: `Referral bonus (${referralSettings.bonus_amount}%) for inviting new user`,
+                  description: `2nd level referral bonus (3%) from indirect referral`,
                 });
-
-              // Mark bonus as credited
-              await supabase
-                .from('referral_investments')
-                .update({ bonus_credited: true })
-                .eq('user_id', recharge.user_id)
-                .eq('referred_by', profile.referred_by);
-
-              // Check for 2nd level referral (referrer's referrer)
-              const { data: referrerProfile } = await supabase
-                .from('profiles')
-                .select('referred_by')
-                .eq('id', profile.referred_by)
-                .single();
-
-              if (referrerProfile?.referred_by) {
-                // Calculate 3% bonus for 2nd level referrer
-                const secondLevelBonus = (totalInvested * 3) / 100;
-                
-                // Credit 2nd level referral bonus
-                await supabase
-                  .from('transactions')
-                  .insert({
-                    user_id: referrerProfile.referred_by,
-                    amount: secondLevelBonus,
-                    type: 'referral_bonus',
-                    description: `2nd level referral bonus (3%) from indirect referral`,
-                  });
-              }
             }
           }
         }
@@ -371,9 +347,10 @@ const Admin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingRecharges'] });
-      queryClient.invalidateQueries({ queryKey: ['activeProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['mainBalance'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast({ title: "Success", description: "Recharge approved successfully" });
+      toast({ title: "Success", description: "Recharge approved - balance credited" });
     },
   });
 

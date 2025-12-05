@@ -279,7 +279,7 @@ export type Database = {
           id: string
           payer_account_name: string | null
           payment_proof_url: string | null
-          product_id: string
+          product_id: string | null
           status: Database["public"]["Enums"]["recharge_status"]
           transaction_id: string | null
           user_id: string
@@ -293,7 +293,7 @@ export type Database = {
           id?: string
           payer_account_name?: string | null
           payment_proof_url?: string | null
-          product_id: string
+          product_id?: string | null
           status?: Database["public"]["Enums"]["recharge_status"]
           transaction_id?: string | null
           user_id: string
@@ -307,7 +307,7 @@ export type Database = {
           id?: string
           payer_account_name?: string | null
           payment_proof_url?: string | null
-          product_id?: string
+          product_id?: string | null
           status?: Database["public"]["Enums"]["recharge_status"]
           transaction_id?: string | null
           user_id?: string
