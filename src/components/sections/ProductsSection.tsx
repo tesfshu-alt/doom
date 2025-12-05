@@ -120,6 +120,14 @@ const ProductsSection = () => {
   });
 
   const handleBuyProduct = (product: any) => {
+    if (isProductOwned(product.id)) {
+      toast({
+        variant: "destructive",
+        title: "Already Owned",
+        description: `You already own ${product.name}. It's generating income for you! Please buy the next product.`,
+      });
+      return;
+    }
     buyProductMutation.mutate(product);
   };
 
