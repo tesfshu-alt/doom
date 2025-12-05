@@ -100,11 +100,11 @@ const ProductsSection = () => {
       return product;
     },
     onSuccess: (product) => {
-      queryClient.invalidateQueries({ queryKey: ['mainBalance'] });
-      queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
-      queryClient.invalidateQueries({ queryKey: ['activeProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['latestRecharge'] });
+      queryClient.invalidateQueries({ queryKey: ['mainBalance', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['availableBalance', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['activeProducts', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['latestRecharge', user?.id] });
       toast({
         title: "Product Working!",
         description: `${product.name} is now working and generating income for you!`,
@@ -128,6 +128,17 @@ const ProductsSection = () => {
       });
       return;
     }
+    
+    const balance = mainBalance || 0;
+    if (balance < product.price) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient Balance",
+        description: `You need ETB ${product.price} but have ETB ${balance.toFixed(2)}. Please recharge first.`,
+      });
+      return;
+    }
+    
     buyProductMutation.mutate(product);
   };
 
