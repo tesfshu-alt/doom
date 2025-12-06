@@ -103,7 +103,7 @@ const Withdrawal = () => {
     const now = new Date();
     const eatTime = toZonedTime(now, 'Africa/Addis_Ababa');
     const hours = eatTime.getHours();
-    return hours >= 9 && hours < 17; // 9 AM to 5 PM
+    return hours >= 9 && hours < 22; // 9 AM to 10 PM
   };
 
   const isWithdrawalTimeAllowed = checkWithdrawalTime();
@@ -113,7 +113,7 @@ const Withdrawal = () => {
       const withdrawalAmount = parseFloat(amount);
       
       if (!isWithdrawalTimeAllowed) {
-        throw new Error('Withdrawal requests are only allowed between 9 AM and 5 PM (Ethiopian Time)');
+        throw new Error('Withdrawal requests are only allowed between 9 AM and 10 PM (Ethiopian Time)');
       }
 
       if (hasPendingWithdrawal) {
@@ -229,7 +229,7 @@ const Withdrawal = () => {
           <Alert>
             <Clock className="h-4 w-4" />
             <AlertDescription>
-              <strong>Note:</strong> Withdrawal requests are only accepted between 9:00 AM and 5:00 PM (Ethiopian Time). Recharge is available 24/7.
+              <strong>Note:</strong> Withdrawal requests are only accepted between 9:00 AM and 10:00 PM (Ethiopian Time). Recharge is available 24/7.
             </AlertDescription>
           </Alert>
         )}

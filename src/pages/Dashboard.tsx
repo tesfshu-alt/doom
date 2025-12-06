@@ -165,7 +165,7 @@ const Dashboard = () => {
                 </span>
               </h1>
               <p className="text-xl text-emerald-100 max-w-md mx-auto">
-                Maximize your money with smart investments
+                Are you ready to explore your future! The place is here
               </p>
               <Button 
                 size="lg"
