@@ -84,13 +84,7 @@ const AdminWithdrawals = () => {
       const withdrawal = pendingWithdrawals?.find(w => w.id === withdrawalId);
       if (!withdrawal) throw new Error('Withdrawal not found');
 
-      // Calculate fee if enabled
-      const feeAmount = (feeSettings?.enabled) 
-        ? withdrawal.amount * (Number(feeSettings.fee_percentage) / 100) 
-        : 0;
-      const netAmount = withdrawal.amount - feeAmount;
-
-      // Update withdrawal status
+      // Update withdrawal status only - balance was already debited when user submitted the request
       const { error: withdrawalError } = await supabase
         .from('withdrawals')
         .update({ 
@@ -101,18 +95,6 @@ const AdminWithdrawals = () => {
         .eq('id', withdrawalId);
 
       if (withdrawalError) throw withdrawalError;
-
-      // Create transaction record for the net withdrawal amount
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: withdrawal.user_id,
-          amount: netAmount,
-          type: 'withdrawal',
-          description: `Withdrawal to ${withdrawal.bank_accounts?.bank_name} - ${withdrawal.bank_accounts?.account_number}${feeAmount > 0 ? ` (Fee: ETB ${feeAmount.toFixed(2)})` : ''}`,
-        });
-
-      if (transactionError) throw transactionError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingWithdrawals'] });
@@ -130,6 +112,10 @@ const AdminWithdrawals = () => {
 
   const rejectMutation = useMutation({
     mutationFn: async (withdrawalId: string) => {
+      const withdrawal = pendingWithdrawals?.find(w => w.id === withdrawalId);
+      if (!withdrawal) throw new Error('Withdrawal not found');
+
+      // Update withdrawal status
       const { error } = await supabase
         .from('withdrawals')
         .update({ 
@@ -140,6 +126,19 @@ const AdminWithdrawals = () => {
         .eq('id', withdrawalId);
       
       if (error) throw error;
+
+      // Refund the balance by deleting the withdrawal transaction that was created on request
+      // Or create a refund transaction to restore the balance
+      const { error: refundError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: withdrawal.user_id,
+          amount: withdrawal.amount,
+          type: 'daily_income',
+          description: `Refund for rejected withdrawal request`,
+        });
+      
+      if (refundError) throw refundError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingWithdrawals'] });
