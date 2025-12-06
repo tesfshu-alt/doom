@@ -50,6 +50,21 @@ const Withdrawal = () => {
     },
   });
 
+  const { data: platformSettings } = useQuery({
+    queryKey: ['platformSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'welcome_popup')
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const minWithdrawal = (platformSettings?.setting_value as any)?.minimum_withdrawal ?? 300;
+
   const { data: userProducts } = useQuery({
     queryKey: ['userProducts', user?.id],
     queryFn: async () => {
@@ -117,8 +132,8 @@ const Withdrawal = () => {
         throw new Error('Amount must be greater than 0');
       }
 
-      if (balance !== undefined && balance < 300) {
-        throw new Error('Minimum withdrawable balance is ETB 300');
+      if (balance !== undefined && balance < minWithdrawal) {
+        throw new Error(`Minimum withdrawable balance is ETB ${minWithdrawal}`);
       }
 
       if (balance !== undefined && withdrawalAmount > balance) {
@@ -262,19 +277,19 @@ const Withdrawal = () => {
                     id="amount"
                     type="number"
                     step="0.01"
-                    min="300"
+                    min={minWithdrawal}
                     max={availableBalance}
-                    placeholder="Enter amount (minimum 300)"
+                    placeholder={`Enter amount (minimum ${minWithdrawal})`}
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    disabled={availableBalance < 300 || !hasProducts}
+                    disabled={availableBalance < minWithdrawal || !hasProducts}
                   />
                   <p className="text-xs text-muted-foreground">
                     {!hasProducts
                       ? 'You must purchase at least one product to withdraw'
-                      : availableBalance < 300 
-                      ? 'Minimum withdrawable balance: ETB 300'
+                      : availableBalance < minWithdrawal 
+                      ? `Minimum withdrawable balance: ETB ${minWithdrawal}`
                       : `Maximum: ETB ${availableBalance.toFixed(2)}`}
                   </p>
                 </div>
@@ -299,14 +314,14 @@ const Withdrawal = () => {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Note:</strong> You must purchase at least one product before withdrawing. You can only withdraw daily income and bonus earnings (minimum ETB 300). Initial investment amounts cannot be withdrawn. Your request will be reviewed by admin.
+                    <strong>Note:</strong> You must purchase at least one product before withdrawing. You can only withdraw daily income and bonus earnings (minimum ETB {minWithdrawal}). Initial investment amounts cannot be withdrawn. Your request will be reviewed by admin.
                   </AlertDescription>
                 </Alert>
 
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < 300 || !hasProducts || hasPendingWithdrawal || !isWithdrawalTimeAllowed}
+                  disabled={withdrawalMutation.isPending || !selectedBankId || !amount || availableBalance < minWithdrawal || !hasProducts || hasPendingWithdrawal || !isWithdrawalTimeAllowed}
                 >
                   {withdrawalMutation.isPending ? 'Submitting...' : 'Submit Withdrawal Request'}
                 </Button>
