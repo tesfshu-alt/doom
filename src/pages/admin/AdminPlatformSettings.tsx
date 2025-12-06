@@ -50,7 +50,7 @@ const AdminPlatformSettings = () => {
         .upsert({
           setting_key: 'welcome_popup',
           setting_value: settingsValue,
-        });
+        }, { onConflict: 'setting_key' });
 
       if (error) throw error;
     },
