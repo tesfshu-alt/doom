@@ -152,7 +152,7 @@ const Withdrawal = () => {
       // Debit the balance immediately by creating a withdrawal transaction
       const { error: transactionError } = await supabase.from('transactions').insert({
         user_id: user?.id,
-        amount: -withdrawalAmount,
+        amount: withdrawalAmount,
         type: 'withdrawal',
         description: `Withdrawal request for ETB ${withdrawalAmount.toFixed(2)}`,
       });
