@@ -272,18 +272,23 @@ const AdminProducts = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dailyIncome">Daily Income (ETB)</Label>
+                  <Label htmlFor="dailyIncome">Daily Income (USDT)</Label>
                   <Input
                     id="dailyIncome"
                     type="number"
-                    step="0.01"
+                    step="0.001"
                     value={formData.dailyIncome}
                     onChange={(e) => setFormData({ ...formData, dailyIncome: e.target.value })}
                     required
                   />
+                  {formData.dailyIncome && (
+                    <p className="text-xs text-muted-foreground">
+                      ≈ ETB {(parseFloat(formData.dailyIncome) * ETB_TO_USDT_RATE).toFixed(2)}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="totalIncome">Total Income (ETB)</Label>
+                  <Label htmlFor="totalIncome">Total Income (USDT)</Label>
                   <Input
                     id="totalIncome"
                     type="number"
@@ -292,6 +297,11 @@ const AdminProducts = () => {
                     onChange={(e) => setFormData({ ...formData, totalIncome: e.target.value })}
                     required
                   />
+                  {formData.totalIncome && (
+                    <p className="text-xs text-muted-foreground">
+                      ≈ ETB {(parseFloat(formData.totalIncome) * ETB_TO_USDT_RATE).toFixed(2)}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -315,8 +325,8 @@ const AdminProducts = () => {
       <div className="grid gap-3">
         {products?.map((product, index) => {
           const imageUrl = product.image_url || productImages[index] || productImages[0];
-          const dailyIncomeUSDT = (Number(product.daily_income) / ETB_TO_USDT_RATE).toFixed(3);
-          const totalIncomeUSDT = (Number(product.total_income) / ETB_TO_USDT_RATE).toFixed(2);
+          const dailyIncomeETB = (Number(product.daily_income) * ETB_TO_USDT_RATE).toFixed(2);
+          const totalIncomeETB = (Number(product.total_income) * ETB_TO_USDT_RATE).toFixed(2);
           return (
           <Card key={product.id}>
             <CardContent className="p-4">
@@ -355,13 +365,13 @@ const AdminProducts = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Daily: </span>
-                      <span className="font-semibold">ETB {product.daily_income}</span>
-                      <span className="text-xs text-emerald-400 ml-1">(${dailyIncomeUSDT})</span>
+                      <span className="font-semibold text-emerald-400">${product.daily_income}</span>
+                      <span className="text-xs text-muted-foreground ml-1">(ETB {dailyIncomeETB})</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Total: </span>
-                      <span className="font-semibold">ETB {product.total_income}</span>
-                      <span className="text-xs text-emerald-400 ml-1">(${totalIncomeUSDT})</span>
+                      <span className="font-semibold text-emerald-400">${product.total_income}</span>
+                      <span className="text-xs text-muted-foreground ml-1">(ETB {totalIncomeETB})</span>
                     </div>
                   </div>
                   </div>

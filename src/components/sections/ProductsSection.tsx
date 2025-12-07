@@ -213,7 +213,8 @@ const ProductsSection = () => {
           const imageUrl = product.image_url || productImages[index] || productImages[0];
           const canAfford = (mainBalance || 0) >= product.price;
           const owned = isProductOwned(product.id);
-          const totalIncomeUSDT = (Number(product.total_income) / ETB_TO_USDT_RATE).toFixed(2);
+          const dailyIncomeETB = (Number(product.daily_income) * ETB_TO_USDT_RATE).toFixed(2);
+          const totalIncomeETB = (Number(product.total_income) * ETB_TO_USDT_RATE).toFixed(2);
           
           return (
             <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all animate-fade-in ${isPremium ? 'border-accent border-2' : ''} ${owned ? 'border-emerald-500 border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
@@ -255,12 +256,14 @@ const ProductsSection = () => {
                     <div className="bg-muted/50 rounded p-2">
                       <TrendingUp className="h-3 w-3 mx-auto mb-1 text-secondary" />
                       <p className="text-xs text-muted-foreground">Daily</p>
-                      <p className="text-sm font-semibold text-secondary">ETB {product.daily_income}</p>
+                      <p className="text-sm font-semibold text-emerald-400">${product.daily_income}</p>
+                      <p className="text-xs text-muted-foreground">ETB {dailyIncomeETB}</p>
                     </div>
                     <div className="bg-muted/50 rounded p-2">
                       <DollarSign className="h-3 w-3 mx-auto mb-1 text-accent" />
                       <p className="text-xs text-muted-foreground">Total</p>
-                      <p className="text-sm font-semibold text-accent">${totalIncomeUSDT}</p>
+                      <p className="text-sm font-semibold text-emerald-400">${product.total_income}</p>
+                      <p className="text-xs text-muted-foreground">ETB {totalIncomeETB}</p>
                     </div>
                   </div>
                 </div>

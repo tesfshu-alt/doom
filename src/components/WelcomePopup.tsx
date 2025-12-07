@@ -103,7 +103,8 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
             </h3>
             <div className="grid gap-3">
               {products?.map((product) => {
-                const totalIncomeUSDT = (Number(product.total_income) / ETB_TO_USDT_RATE).toFixed(2);
+                const dailyIncomeETB = (Number(product.daily_income) * ETB_TO_USDT_RATE).toFixed(2);
+                const totalIncomeETB = (Number(product.total_income) * ETB_TO_USDT_RATE).toFixed(2);
                 return (
                   <Card key={product.id} className="border-primary/20 hover:border-primary/40 transition-colors">
                     <CardContent className="p-4">
@@ -136,8 +137,8 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
                               <Coins className="h-3 w-3" />
                               <span>Daily Income</span>
                             </div>
-                            <p className="font-semibold text-secondary">ETB {product.daily_income}</p>
-                            <p className="text-xs text-emerald-400">${(Number(product.daily_income) / ETB_TO_USDT_RATE).toFixed(2)}</p>
+                            <p className="font-semibold text-emerald-400">${product.daily_income}</p>
+                            <p className="text-xs text-muted-foreground">ETB {dailyIncomeETB}</p>
                           </div>
                           
                           <div className="space-y-1">
@@ -145,8 +146,8 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
                               <TrendingUp className="h-3 w-3" />
                               <span>Total Income</span>
                             </div>
-                            <p className="font-semibold text-accent">ETB {product.total_income}</p>
-                            <p className="text-xs text-emerald-400">${totalIncomeUSDT}</p>
+                            <p className="font-semibold text-emerald-400">${product.total_income}</p>
+                            <p className="text-xs text-muted-foreground">ETB {totalIncomeETB}</p>
                           </div>
                         </div>
                       </div>
