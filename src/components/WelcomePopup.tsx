@@ -16,8 +16,6 @@ interface WelcomePopupProps {
   onClose: () => void;
 }
 
-const ETB_TO_USDT_RATE = 170;
-
 const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
   const { data: platformSettings } = useQuery({
     queryKey: ['platformSettings'],
@@ -26,11 +24,26 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
         .from('platform_settings')
         .select('*')
         .eq('setting_key', 'welcome_popup')
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
+
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const ETB_TO_USDT_RATE = (exchangeRateSettings?.setting_value as any)?.etb_to_usdt || 170;
 
   const { data: products } = useQuery({
     queryKey: ['productsForWelcome'],
