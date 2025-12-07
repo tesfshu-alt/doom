@@ -394,21 +394,21 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="recharges" className="space-y-4">
-          <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-13 min-w-[1100px]">
-              <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
-              <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
-              <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
-              <TabsTrigger value="referral" className="text-xs sm:text-sm">Referral</TabsTrigger>
-              <TabsTrigger value="bonus-codes" className="text-xs sm:text-sm">Bonus Codes</TabsTrigger>
-              <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
-              <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
-              <TabsTrigger value="bank" className="text-xs sm:text-sm">Bank</TabsTrigger>
-              <TabsTrigger value="password" className="text-xs sm:text-sm">Password</TabsTrigger>
-              <TabsTrigger value="support" className="text-xs sm:text-sm">Support</TabsTrigger>
-              <TabsTrigger value="withdrawal-fee" className="text-xs sm:text-sm">W. Fee</TabsTrigger>
-              <TabsTrigger value="exchange-rate" className="text-xs sm:text-sm">Rate</TabsTrigger>
-              <TabsTrigger value="settings" className="text-xs sm:text-sm">Settings</TabsTrigger>
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="flex flex-wrap gap-1 h-auto p-1">
+              <TabsTrigger value="recharges" className="text-xs px-2 py-1.5">Recharges</TabsTrigger>
+              <TabsTrigger value="withdrawals" className="text-xs px-2 py-1.5">Withdrawals</TabsTrigger>
+              <TabsTrigger value="income" className="text-xs px-2 py-1.5">Income</TabsTrigger>
+              <TabsTrigger value="referral" className="text-xs px-2 py-1.5">Referral</TabsTrigger>
+              <TabsTrigger value="bonus-codes" className="text-xs px-2 py-1.5">Bonus</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs px-2 py-1.5">Users</TabsTrigger>
+              <TabsTrigger value="products" className="text-xs px-2 py-1.5">Products</TabsTrigger>
+              <TabsTrigger value="bank" className="text-xs px-2 py-1.5">Bank</TabsTrigger>
+              <TabsTrigger value="password" className="text-xs px-2 py-1.5">Password</TabsTrigger>
+              <TabsTrigger value="support" className="text-xs px-2 py-1.5">Support</TabsTrigger>
+              <TabsTrigger value="withdrawal-fee" className="text-xs px-2 py-1.5">W.Fee</TabsTrigger>
+              <TabsTrigger value="exchange-rate" className="text-xs px-2 py-1.5">Rate</TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs px-2 py-1.5">Settings</TabsTrigger>
             </TabsList>
           </div>
 
