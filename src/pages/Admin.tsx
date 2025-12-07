@@ -26,6 +26,7 @@ import AdminPasswordReset from "./admin/AdminPasswordReset";
 import AdminBonusCodes from "./admin/AdminBonusCodes";
 import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 import AdminPlatformSettings from "./admin/AdminPlatformSettings";
+import AdminExchangeRate from "./admin/AdminExchangeRate";
 import RechargeApprovalCard from "@/components/RechargeApprovalCard";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
@@ -394,7 +395,7 @@ const Admin = () => {
 
         <Tabs defaultValue="recharges" className="space-y-4">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-12 min-w-[1000px]">
+            <TabsList className="grid w-full grid-cols-13 min-w-[1100px]">
               <TabsTrigger value="recharges" className="text-xs sm:text-sm">Recharges</TabsTrigger>
               <TabsTrigger value="withdrawals" className="text-xs sm:text-sm">Withdrawals</TabsTrigger>
               <TabsTrigger value="income" className="text-xs sm:text-sm">Income</TabsTrigger>
@@ -406,6 +407,7 @@ const Admin = () => {
               <TabsTrigger value="password" className="text-xs sm:text-sm">Password</TabsTrigger>
               <TabsTrigger value="support" className="text-xs sm:text-sm">Support</TabsTrigger>
               <TabsTrigger value="withdrawal-fee" className="text-xs sm:text-sm">W. Fee</TabsTrigger>
+              <TabsTrigger value="exchange-rate" className="text-xs sm:text-sm">Rate</TabsTrigger>
               <TabsTrigger value="settings" className="text-xs sm:text-sm">Settings</TabsTrigger>
             </TabsList>
           </div>
@@ -511,6 +513,10 @@ const Admin = () => {
 
           <TabsContent value="withdrawal-fee" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminWithdrawalFee />
+          </TabsContent>
+
+          <TabsContent value="exchange-rate" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminExchangeRate />
           </TabsContent>
 
           <TabsContent value="settings" className="max-h-[calc(100vh-250px)] overflow-y-auto">

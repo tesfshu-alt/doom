@@ -36,6 +36,21 @@ const AdminProducts = () => {
     sortOrder: '',
   });
 
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const ETB_TO_USDT_RATE = (exchangeRateSettings?.setting_value as any)?.etb_to_usdt || 170;
+
   const { data: products } = useQuery({
     queryKey: ['adminProducts'],
     queryFn: async () => {
@@ -300,6 +315,8 @@ const AdminProducts = () => {
       <div className="grid gap-3">
         {products?.map((product, index) => {
           const imageUrl = product.image_url || productImages[index] || productImages[0];
+          const dailyIncomeUSDT = (Number(product.daily_income) / ETB_TO_USDT_RATE).toFixed(3);
+          const totalIncomeUSDT = (Number(product.total_income) / ETB_TO_USDT_RATE).toFixed(2);
           return (
           <Card key={product.id}>
             <CardContent className="p-4">
@@ -339,10 +356,12 @@ const AdminProducts = () => {
                     <div>
                       <span className="text-muted-foreground">Daily: </span>
                       <span className="font-semibold">ETB {product.daily_income}</span>
+                      <span className="text-xs text-emerald-400 ml-1">(${dailyIncomeUSDT})</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Total: </span>
                       <span className="font-semibold">ETB {product.total_income}</span>
+                      <span className="text-xs text-emerald-400 ml-1">(${totalIncomeUSDT})</span>
                     </div>
                   </div>
                   </div>

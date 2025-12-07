@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet, ChevronLeft, AlertCircle, Clock } from "lucide-react";
+import { Wallet, ChevronLeft, AlertCircle, Clock, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -315,6 +315,13 @@ const Withdrawal = () => {
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Note:</strong> You must purchase at least one product before withdrawing. You can only withdraw daily income and bonus earnings (minimum ETB {minWithdrawal}). Initial investment amounts cannot be withdrawn. Your request will be reviewed by admin.
+                  </AlertDescription>
+                </Alert>
+
+                <Alert className="border-emerald-500/50 bg-emerald-500/10">
+                  <DollarSign className="h-4 w-4 text-emerald-500" />
+                  <AlertDescription className="text-emerald-300">
+                    <strong>Important:</strong> Your withdrawal will be credited directly to your bank account in ETB (Ethiopian Birr), calculated at the current USDT exchange rate.
                   </AlertDescription>
                 </Alert>
 

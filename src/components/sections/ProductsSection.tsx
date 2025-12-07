@@ -16,8 +16,6 @@ import package5 from "@/assets/products/package-5.jpg";
 import package6 from "@/assets/products/package-6.jpg";
 import package7 from "@/assets/products/package-7.jpg";
 
-const ETB_TO_USDT_RATE = 170;
-
 const ProductsSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,6 +24,21 @@ const ProductsSection = () => {
   const productImages = [package1, package2, package3, package4, package5, package6, package7];
 
   const { data: mainBalance } = useMainBalance(user?.id);
+
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const ETB_TO_USDT_RATE = (exchangeRateSettings?.setting_value as any)?.etb_to_usdt || 170;
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
