@@ -42,6 +42,16 @@ serve(async (req) => {
       throw fetchError;
     }
 
+    // Get exchange rate from platform settings
+    const { data: exchangeSettings } = await supabase
+      .from('platform_settings')
+      .select('setting_value')
+      .eq('setting_key', 'exchange_rate')
+      .maybeSingle();
+
+    const exchangeRate = (exchangeSettings?.setting_value as any)?.etb_to_usdt || 170;
+    console.log(`Using exchange rate: 1 USDT = ${exchangeRate} ETB`);
+
     console.log(`Found ${userProducts?.length || 0} active user products`);
 
     const now = new Date();
@@ -73,18 +83,20 @@ serve(async (req) => {
         }
 
         // Credit hourly income (1/24th of daily income)
-        const dailyIncome = userProduct.products.daily_income;
-        const hourlyIncome = dailyIncome / 24;
+        // daily_income is stored in USDT, convert to ETB for crediting
+        const dailyIncomeUSDT = userProduct.products.daily_income;
+        const dailyIncomeETB = dailyIncomeUSDT * exchangeRate;
+        const hourlyIncomeETB = dailyIncomeETB / 24;
         
-        console.log(`Crediting ${hourlyIncome} (hourly) to user ${userProduct.user_id} for product ${userProduct.products.name}`);
+        console.log(`Crediting ETB ${hourlyIncomeETB.toFixed(2)} (hourly, from $${dailyIncomeUSDT}/day) to user ${userProduct.user_id} for product ${userProduct.products.name}`);
         
         const { error: transactionError } = await supabase
           .from('transactions')
           .insert({
             user_id: userProduct.user_id,
-            amount: hourlyIncome,
+            amount: hourlyIncomeETB,
             type: 'daily_income',
-            description: `Hourly income from ${userProduct.products.name}`,
+            description: `Hourly income from ${userProduct.products.name} ($${(dailyIncomeUSDT / 24).toFixed(4)} USDT)`,
           });
 
         if (transactionError) {

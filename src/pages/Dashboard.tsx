@@ -126,7 +126,8 @@ const Dashboard = () => {
   }, [user?.id, queryClient]);
 
   const totalInvestment = activeProducts?.reduce((sum, p) => sum + Number(p.products?.price || 0), 0) || 0;
-  const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
+  const totalDailyIncomeUSDT = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
+  const totalDailyIncomeETB = totalDailyIncomeUSDT * exchangeRate;
 
   const shortcuts = [
     { icon: Package, label: "Packages", description: "View exchange packages", action: () => setActiveView("products"), gradient: "from-emerald-600 to-green-600" },
@@ -226,8 +227,8 @@ const Dashboard = () => {
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xs">Daily Income</span>
                 </div>
-                <p className="text-xl font-bold text-white">ETB {totalDailyIncome.toFixed(0)}</p>
-                <p className="text-xs text-emerald-400">${(totalDailyIncome / exchangeRate).toFixed(2)} USDT</p>
+                <p className="text-xl font-bold text-emerald-400">${totalDailyIncomeUSDT.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">ETB {totalDailyIncomeETB.toFixed(2)}</p>
               </CardContent>
             </Card>
           </div>
