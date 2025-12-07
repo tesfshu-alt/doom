@@ -114,7 +114,7 @@ const Dashboard = () => {
   const totalDailyIncome = activeProducts?.reduce((sum, p) => sum + Number(p.products?.daily_income || 0), 0) || 0;
 
   const shortcuts = [
-    { icon: Package, label: "Products", description: "View investment packages", action: () => setActiveView("products"), gradient: "from-emerald-600 to-green-600" },
+    { icon: Package, label: "Packages", description: "View exchange packages", action: () => setActiveView("products"), gradient: "from-emerald-600 to-green-600" },
     { icon: Users, label: "Team", description: "View referrals & bonuses", action: () => setActiveView("team"), gradient: "from-teal-600 to-emerald-600" },
     { icon: User, label: "Account", description: "Profile & settings", action: () => setActiveView("account"), gradient: "from-green-600 to-teal-600" },
     { icon: CreditCard, label: "Recharge", description: "Add funds", action: () => navigate('/recharge'), gradient: "from-emerald-700 to-green-700" },
