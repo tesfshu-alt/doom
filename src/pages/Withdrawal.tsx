@@ -63,6 +63,21 @@ const Withdrawal = () => {
     },
   });
 
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const exchangeRate = (exchangeRateSettings?.setting_value as { etb_to_usdt?: number })?.etb_to_usdt || 170;
+
   const minWithdrawal = (platformSettings?.setting_value as any)?.minimum_withdrawal ?? 300;
 
   const { data: userProducts } = useQuery({
@@ -211,8 +226,9 @@ const Withdrawal = () => {
               Available Balance
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-1">
             <p className="text-3xl font-bold text-primary">ETB {availableBalance.toFixed(2)}</p>
+            <p className="text-lg text-emerald-500">≈ ${(availableBalance / exchangeRate).toFixed(2)} USDT</p>
           </CardContent>
         </Card>
 
