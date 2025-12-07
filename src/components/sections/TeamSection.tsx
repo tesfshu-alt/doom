@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Users, Calendar, Gift, CheckCircle2, Clock, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { Progress } from "@/components/ui/progress";
+import { maskPhoneNumber } from "@/lib/maskUtils";
 import doomLogo from "@/assets/doom-logo.png";
 
 const TeamSection = () => {
@@ -22,6 +23,21 @@ const TeamSection = () => {
     },
     enabled: !!user,
   });
+
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const exchangeRate = (exchangeRateSettings?.setting_value as { etb_to_usdt?: number })?.etb_to_usdt || 170;
 
   // Level 1 referrals (direct)
   const { data: referrals } = useQuery({
@@ -153,6 +169,8 @@ const TeamSection = () => {
     }
   };
 
+  const totalEarned = referralEarnings?.total || 0;
+
   return (
     <div className="p-4 max-w-lg mx-auto space-y-6 pb-20">
       <div className="space-y-2">
@@ -213,7 +231,8 @@ const TeamSection = () => {
               <Gift className="h-4 w-4" />
               <span className="text-xs">Total Earned</span>
             </div>
-            <p className="text-2xl font-bold text-accent">ETB {referralEarnings?.total.toFixed(0) || '0'}</p>
+            <p className="text-2xl font-bold text-accent">ETB {totalEarned.toFixed(0)}</p>
+            <p className="text-xs text-emerald-500">${(totalEarned / exchangeRate).toFixed(2)} USDT</p>
           </CardContent>
         </Card>
       </div>
@@ -267,7 +286,7 @@ const TeamSection = () => {
                         <Users className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm">{referral.phone_number}</p>
+                        <p className="font-semibold text-sm">{maskPhoneNumber(referral.phone_number)}</p>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
                           <span>{format(new Date(referral.created_at), 'MMM dd, yyyy')}</span>
