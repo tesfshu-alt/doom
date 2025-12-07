@@ -217,6 +217,7 @@ const Dashboard = () => {
                   <span className="text-xs">Investment</span>
                 </div>
                 <p className="text-xl font-bold text-white">ETB {totalInvestment.toFixed(0)}</p>
+                <p className="text-xs text-emerald-400">${(totalInvestment / exchangeRate).toFixed(2)} USDT</p>
               </CardContent>
             </Card>
             <Card className="shadow-card bg-gradient-to-br from-green-950 to-emerald-900 border border-green-500/20 animate-fade-in">
@@ -226,6 +227,7 @@ const Dashboard = () => {
                   <span className="text-xs">Daily Income</span>
                 </div>
                 <p className="text-xl font-bold text-white">ETB {totalDailyIncome.toFixed(0)}</p>
+                <p className="text-xs text-emerald-400">${(totalDailyIncome / exchangeRate).toFixed(2)} USDT</p>
               </CardContent>
             </Card>
           </div>

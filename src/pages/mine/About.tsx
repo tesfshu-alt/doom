@@ -1,19 +1,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Shield, Users, ArrowRightLeft, Globe, Building2 } from "lucide-react";
+import { TrendingUp, Shield, Users, Globe, Building2, Cpu, Plane, Car, Smartphone } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import doomLogo from "@/assets/doom-logo.png";
 
 const About = () => {
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const exchangeRate = (exchangeRateSettings?.setting_value as { etb_to_usdt?: number })?.etb_to_usdt || 170;
+
   const features = [
     {
-      icon: ArrowRightLeft,
-      title: "ETB to Dollar Exchange",
-      description: "Seamless currency exchange with competitive rates (1 USDT = 170 ETB)",
+      icon: Cpu,
+      title: "Cutting-Edge Technology",
+      description: "Invest in electronics, gadgets, and innovative tech products",
     },
     {
       icon: TrendingUp,
       title: "High Returns",
-      description: "Competitive daily income rates on all exchange packages",
+      description: "Competitive daily income rates on all investment packages",
     },
     {
       icon: Shield,
@@ -36,11 +53,11 @@ const About = () => {
               <img src={doomLogo} alt="Doom" className="w-20 h-20 object-contain" />
               <div>
                 <h2 className="text-2xl font-bold">Doom</h2>
-                <p className="text-white/90">Ethiopian Branch</p>
+                <p className="text-white/90">Technology Investment Platform</p>
               </div>
             </div>
             <p className="text-white/90">
-              Your trusted partner for ETB to Dollar currency exchange and investment opportunities
+              Your trusted partner for technology investments and daily returns
             </p>
           </CardContent>
         </Card>
@@ -51,18 +68,24 @@ const About = () => {
               <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
-              <CardTitle className="text-lg">About Doom Ethiopia</CardTitle>
+              <CardTitle className="text-lg">About Doom</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
             <p>
-              <strong className="text-foreground">Doom</strong> is a newly established fintech company dedicated to providing seamless ETB to Dollar currency exchange services. As the official Ethiopian branch, we are committed to empowering Ethiopians with accessible and profitable currency exchange opportunities.
+              <strong className="text-foreground">Doom</strong> is a premier vendor and investor specializing in cutting-edge technologies. We invest in a diverse portfolio including electronics, automobiles, mobile devices, aircraft, and other innovative technologies.
             </p>
             <p>
-              Founded with the vision of bridging the gap between local currency and international markets, Doom offers a unique platform where users can invest in exchange packages and earn daily income through our innovative trading system.
+              Our platform allows users to participate in technology investments and earn daily returns. User payments are processed using the current dollar exchange rate and credited directly in the country's local currency (ETB). We are not a forex exchanger - we are a technology investment platform.
             </p>
+            <div className="flex items-center gap-6 py-4">
+              <Car className="h-8 w-8 text-emerald-500" />
+              <Smartphone className="h-8 w-8 text-emerald-500" />
+              <Plane className="h-8 w-8 text-emerald-500" />
+              <Cpu className="h-8 w-8 text-emerald-500" />
+            </div>
             <p>
-              Our team of experienced financial experts and technology professionals work tirelessly to ensure secure, transparent, and profitable transactions for all our valued users.
+              Our team of experienced investment professionals and technology experts work tirelessly to ensure secure, transparent, and profitable returns for all our valued users.
             </p>
           </CardContent>
         </Card>
@@ -78,10 +101,10 @@ const About = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              We are on a mission to democratize currency exchange and investment opportunities for every Ethiopian. Through our platform, users can participate in the global currency market and benefit from competitive exchange rates.
+              We are on a mission to democratize technology investments for everyone. Through our platform, users can participate in the growth of cutting-edge technologies and benefit from competitive daily returns.
             </p>
             <p>
-              Our platform combines cutting-edge technology with proven investment strategies to deliver consistent returns while maintaining the highest standards of security and transparency.
+              All earnings are calculated in USD and paid out in ETB at the current exchange rate, ensuring transparent and fair compensation for our investors.
             </p>
           </CardContent>
         </Card>
@@ -111,8 +134,8 @@ const About = () => {
         <Card className="shadow-card bg-emerald-950/50 border-emerald-500/30">
           <CardContent className="p-6 text-center space-y-2">
             <p className="text-sm text-emerald-300">Current Exchange Rate</p>
-            <p className="text-3xl font-bold text-white">1 USDT = 170 ETB</p>
-            <p className="text-xs text-muted-foreground">Rates may vary based on market conditions</p>
+            <p className="text-3xl font-bold text-white">1 USDT = {exchangeRate} ETB</p>
+            <p className="text-xs text-muted-foreground">Payments credited in ETB at current rate</p>
           </CardContent>
         </Card>
       </div>

@@ -137,14 +137,16 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
                               <span>Daily Income</span>
                             </div>
                             <p className="font-semibold text-secondary">ETB {product.daily_income}</p>
+                            <p className="text-xs text-emerald-400">${(Number(product.daily_income) / ETB_TO_USDT_RATE).toFixed(2)}</p>
                           </div>
                           
                           <div className="space-y-1">
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <TrendingUp className="h-3 w-3" />
-                              <span>Total (USDT)</span>
+                              <span>Total Income</span>
                             </div>
-                            <p className="font-semibold text-accent">${totalIncomeUSDT}</p>
+                            <p className="font-semibold text-accent">ETB {product.total_income}</p>
+                            <p className="text-xs text-emerald-400">${totalIncomeUSDT}</p>
                           </div>
                         </div>
                       </div>
