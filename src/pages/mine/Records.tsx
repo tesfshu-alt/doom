@@ -14,6 +14,21 @@ const Records = () => {
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState("all");
 
+  const { data: exchangeRateSettings } = useQuery({
+    queryKey: ['exchangeRateSettings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('setting_key', 'exchange_rate')
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const exchangeRate = (exchangeRateSettings?.setting_value as { etb_to_usdt?: number })?.etb_to_usdt || 170;
+
   const { data: transactions } = useQuery({
     queryKey: ['transactions', user?.id],
     queryFn: async () => {
@@ -162,9 +177,14 @@ const Records = () => {
                             </Badge>
                           </div>
                         </div>
-                        <p className={`text-lg font-bold flex-shrink-0 ${getTransactionAmountColor(transaction.type)}`}>
-                          {getTransactionSign(transaction.type)}ETB {Math.abs(Number(transaction.amount)).toFixed(2)}
-                        </p>
+                        <div className="text-right flex-shrink-0">
+                          <p className={`text-lg font-bold ${getTransactionAmountColor(transaction.type)}`}>
+                            {getTransactionSign(transaction.type)}ETB {Math.abs(Number(transaction.amount)).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-emerald-500">
+                            ${(Math.abs(Number(transaction.amount)) / exchangeRate).toFixed(2)} USDT
+                          </p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -199,9 +219,14 @@ const Records = () => {
                             {getStatusBadge(recharge.status)}
                           </div>
                         </div>
-                        <p className="text-lg font-bold flex-shrink-0 text-primary">
-                          ETB {Number(recharge.amount).toFixed(2)}
-                        </p>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-lg font-bold text-primary">
+                            ETB {Number(recharge.amount).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-emerald-500">
+                            ${(Number(recharge.amount) / exchangeRate).toFixed(2)} USDT
+                          </p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -243,9 +268,14 @@ const Records = () => {
                             {getStatusBadge(withdrawal.status)}
                           </div>
                         </div>
-                        <p className="text-lg font-bold flex-shrink-0 text-red-600">
-                          -ETB {Number(withdrawal.amount).toFixed(2)}
-                        </p>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-lg font-bold text-red-600">
+                            -ETB {Number(withdrawal.amount).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-emerald-500">
+                            ${(Number(withdrawal.amount) / exchangeRate).toFixed(2)} USDT
+                          </p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
