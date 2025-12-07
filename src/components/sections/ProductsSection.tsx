@@ -7,21 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import { useToast } from "@/hooks/use-toast";
-import { Package, TrendingUp, Calendar, DollarSign, CheckCircle, Lock } from "lucide-react";
-import car1 from "@/assets/products/car-1.jpg";
-import car2 from "@/assets/products/car-2.jpg";
-import car3 from "@/assets/products/car-3.jpg";
-import car4 from "@/assets/products/car-4.jpg";
-import car5 from "@/assets/products/car-5.jpg";
-import car6 from "@/assets/products/car-6.jpg";
-import car7 from "@/assets/products/car-7.jpg";
+import { ArrowRightLeft, TrendingUp, Calendar, DollarSign, CheckCircle, Lock } from "lucide-react";
+import package1 from "@/assets/products/package-1.jpg";
+import package2 from "@/assets/products/package-2.jpg";
+import package3 from "@/assets/products/package-3.jpg";
+import package4 from "@/assets/products/package-4.jpg";
+import package5 from "@/assets/products/package-5.jpg";
+import package6 from "@/assets/products/package-6.jpg";
+import package7 from "@/assets/products/package-7.jpg";
+
+const ETB_TO_USDT_RATE = 170;
 
 const ProductsSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const productImages = [car1, car2, car3, car4, car5, car6, car7];
+  const productImages = [package1, package2, package3, package4, package5, package6, package7];
 
   const { data: mainBalance } = useMainBalance(user?.id);
 
@@ -60,7 +62,7 @@ const ProductsSection = () => {
         .eq('is_active', true);
       
       if (existingProducts?.some(up => up.product_id === product.id)) {
-        throw new Error('You already own this product. It is currently working and generating income for you.');
+        throw new Error('You already own this package. It is currently working and generating income for you.');
       }
       
       // Fetch fresh balance from transactions table
@@ -129,7 +131,7 @@ const ProductsSection = () => {
       queryClient.invalidateQueries({ queryKey: ['userProducts', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['latestRecharge', user?.id] });
       toast({
-        title: "Product Working!",
+        title: "Package Activated!",
         description: `${product.name} is now working and generating income for you!`,
       });
     },
@@ -147,7 +149,7 @@ const ProductsSection = () => {
       toast({
         variant: "destructive",
         title: "Already Owned",
-        description: `You already own ${product.name}. It's generating income for you! Please buy the next product.`,
+        description: `You already own ${product.name}. It's generating income for you! Please buy the next package.`,
       });
       return;
     }
@@ -187,8 +189,9 @@ const ProductsSection = () => {
   return (
     <div className="p-4 max-w-lg mx-auto space-y-6 pb-20">
       <div className="space-y-2">
-        <h2 className="text-xl font-bold">Investment Products</h2>
+        <h2 className="text-xl font-bold">Exchange Packages</h2>
         <p className="text-sm text-muted-foreground">Your balance: <span className="font-bold text-primary">ETB {(mainBalance || 0).toFixed(2)}</span></p>
+        <p className="text-xs text-emerald-400">1 USDT = {ETB_TO_USDT_RATE} ETB</p>
       </div>
 
       <div className="space-y-4">
@@ -197,6 +200,8 @@ const ProductsSection = () => {
           const imageUrl = product.image_url || productImages[index] || productImages[0];
           const canAfford = (mainBalance || 0) >= product.price;
           const owned = isProductOwned(product.id);
+          const totalIncomeUSDT = (Number(product.total_income) / ETB_TO_USDT_RATE).toFixed(2);
+          
           return (
             <Card key={product.id} className={`shadow-card hover:shadow-elevated transition-all animate-fade-in ${isPremium ? 'border-accent border-2' : ''} ${owned ? 'border-emerald-500 border-2' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
               <CardContent className="p-0">
@@ -223,7 +228,7 @@ const ProductsSection = () => {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Package className={`h-5 w-5 ${owned ? 'text-emerald-500' : isPremium ? 'text-accent' : 'text-primary'}`} />
+                      <ArrowRightLeft className={`h-5 w-5 ${owned ? 'text-emerald-500' : isPremium ? 'text-accent' : 'text-primary'}`} />
                       <h3 className="font-bold">{product.name}</h3>
                     </div>
                     <p className="text-xl font-bold text-primary">ETB {product.price}</p>
@@ -242,7 +247,7 @@ const ProductsSection = () => {
                     <div className="bg-muted/50 rounded p-2">
                       <DollarSign className="h-3 w-3 mx-auto mb-1 text-accent" />
                       <p className="text-xs text-muted-foreground">Total</p>
-                      <p className="text-sm font-semibold text-accent">ETB {product.total_income}</p>
+                      <p className="text-sm font-semibold text-accent">${totalIncomeUSDT}</p>
                     </div>
                   </div>
                 </div>
