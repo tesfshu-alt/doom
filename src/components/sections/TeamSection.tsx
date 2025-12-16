@@ -141,8 +141,10 @@ const TeamSection = () => {
   });
 
   // Use Vite environment variable or fallback to Vercel domain
-  const baseUrl = import.meta.env.VITE_BASE_URL || "https://doom-ebon-gamma.vercel.app";
-  const referralLink = profile ? `${baseUrl}/auth?ref=${profile.referral_code}` : '';
+const referralLink = profile
+  ? `${window.location.origin}/auth?ref=${profile.referral_code}`
+  : '';
+
 
   const shareMessage = `🚗 Your dream is here, join us now!\n\nStart earning daily income with DOOM - the ultimate car investment platform.\n\n👉 ${referralLink}`;
 
