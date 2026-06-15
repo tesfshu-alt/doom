@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="dangote-theme">
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="dangote-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
