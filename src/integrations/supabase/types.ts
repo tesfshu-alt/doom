@@ -175,6 +175,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_task_completions: {
+        Row: {
+          completed_count: number
+          created_at: string
+          id: string
+          reward_amount: number
+          reward_claimed: boolean
+          task_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_count?: number
+          created_at?: string
+          id?: string
+          reward_amount?: number
+          reward_claimed?: boolean
+          task_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_count?: number
+          created_at?: string
+          id?: string
+          reward_amount?: number
+          reward_claimed?: boolean
+          task_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string | null
@@ -550,6 +583,7 @@ export type Database = {
     }
     Functions: {
       claim_bonus_code: { Args: { _code: string }; Returns: number }
+      complete_daily_task: { Args: never; Returns: Json }
       generate_referral_code: { Args: never; Returns: string }
       get_user_id_by_referral_code: { Args: { _code: string }; Returns: string }
       has_role: {
