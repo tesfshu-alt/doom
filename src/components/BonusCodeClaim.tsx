@@ -20,118 +20,15 @@ const BonusCodeClaim = () => {
         throw new Error("Please enter a bonus code");
       }
 
-      // Find the bonus code
-      const { data: codeData, error: codeError } = await supabase
-        .from('bonus_codes')
-        .select('*')
-        .eq('code', bonusCode.toUpperCase())
-        .eq('is_active', true)
-        .single();
+      const { data, error } = await supabase.rpc('claim_bonus_code', {
+        _code: bonusCode.trim().toUpperCase(),
+      });
 
-      if (codeError || !codeData) {
-        throw new Error("Invalid or expired bonus code");
+      if (error) {
+        throw new Error(error.message || "Failed to claim bonus code");
       }
 
-      // Check if code is expired
-      if (new Date(codeData.expires_at) < new Date()) {
-        throw new Error("This bonus code has expired");
-      }
-
-      // Check if max claims reached
-      if (codeData.total_claims >= codeData.max_claims) {
-        throw new Error("This bonus code has reached maximum claims");
-      }
-
-      // Check if user already claimed this code
-      const { data: existingClaim } = await supabase
-        .from('bonus_code_claims')
-        .select('id, bonus_amount')
-        .eq('user_id', user?.id)
-        .eq('code_id', codeData.id)
-        .maybeSingle();
-
-      if (existingClaim) {
-        // Check if the bonus was actually credited (transaction exists)
-        const { data: existingTransaction } = await supabase
-          .from('transactions')
-          .select('id')
-          .eq('user_id', user?.id)
-          .eq('description', `Bonus code reward: ${codeData.code}`)
-          .maybeSingle();
-
-        if (existingTransaction) {
-          throw new Error("You have already claimed this bonus code");
-        }
-
-        // Orphaned claim detected - credit the bonus now
-        const { error: transactionError } = await supabase
-          .from('transactions')
-          .insert({
-            user_id: user?.id,
-            amount: existingClaim.bonus_amount,
-            type: 'referral_bonus',
-            description: `Bonus code reward: ${codeData.code}`,
-          });
-
-        if (transactionError) {
-          throw new Error("Failed to credit bonus. Please contact support.");
-        }
-
-        return existingClaim.bonus_amount;
-      }
-
-      // Calculate bonus amount based on claims (higher for earlier claims)
-      const claimRatio = codeData.total_claims / codeData.max_claims;
-      const bonusRange = codeData.max_bonus - codeData.min_bonus;
-      const bonusAmount = codeData.max_bonus - (bonusRange * claimRatio);
-
-      // Create claim record
-      const { error: claimError } = await supabase
-        .from('bonus_code_claims')
-        .insert({
-          user_id: user?.id,
-          code_id: codeData.id,
-          bonus_amount: bonusAmount,
-        });
-
-      if (claimError) throw claimError;
-
-      // Update total claims
-      const { error: updateError } = await supabase
-        .from('bonus_codes')
-        .update({ total_claims: codeData.total_claims + 1 })
-        .eq('id', codeData.id);
-
-      if (updateError) throw updateError;
-
-      // Credit bonus to user
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          amount: bonusAmount,
-          type: 'referral_bonus',
-          description: `Bonus code reward: ${codeData.code}`,
-        });
-
-      if (transactionError) {
-        // Rollback the claim if transaction fails
-        await supabase
-          .from('bonus_code_claims')
-          .delete()
-          .eq('user_id', user?.id)
-          .eq('code_id', codeData.id);
-        
-        // Rollback the total_claims increment
-        await supabase
-          .from('bonus_codes')
-          .update({ total_claims: codeData.total_claims })
-          .eq('id', codeData.id);
-
-        throw new Error("Failed to credit bonus. Please try again.");
-      }
-
-      return bonusAmount;
+      return Number(data);
     },
     onSuccess: (bonusAmount) => {
       queryClient.invalidateQueries({ queryKey: ['availableBalance'] });
