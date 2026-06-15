@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: redirectUrl,
         data: {
           phone_number: phoneNumber,
-          referred_by: referrer.id,
+          referred_by: referrerId,
           full_name: fullName.trim(),
         },
       },
