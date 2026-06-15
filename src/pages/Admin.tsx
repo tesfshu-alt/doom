@@ -23,7 +23,7 @@ import AdminDailyIncome from "./admin/AdminDailyIncome";
 import AdminReferralSettings from "./admin/AdminReferralSettings";
 import AdminCustomerService from "./admin/AdminCustomerService";
 import AdminPasswordReset from "./admin/AdminPasswordReset";
-import AdminBonusCodes from "./admin/AdminBonusCodes";
+import AdminDailyTasks from "./admin/AdminDailyTasks";
 import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 import AdminPlatformSettings from "./admin/AdminPlatformSettings";
 import AdminExchangeRate from "./admin/AdminExchangeRate";
@@ -400,7 +400,7 @@ const Admin = () => {
               <TabsTrigger value="withdrawals" className="text-xs px-2 py-1.5">Withdrawals</TabsTrigger>
               <TabsTrigger value="income" className="text-xs px-2 py-1.5">Income</TabsTrigger>
               <TabsTrigger value="referral" className="text-xs px-2 py-1.5">Referral</TabsTrigger>
-              <TabsTrigger value="bonus-codes" className="text-xs px-2 py-1.5">Bonus</TabsTrigger>
+              <TabsTrigger value="daily-tasks" className="text-xs px-2 py-1.5">Tasks</TabsTrigger>
               <TabsTrigger value="users" className="text-xs px-2 py-1.5">Users</TabsTrigger>
               <TabsTrigger value="products" className="text-xs px-2 py-1.5">Products</TabsTrigger>
               <TabsTrigger value="bank" className="text-xs px-2 py-1.5">Bank</TabsTrigger>
@@ -448,8 +448,8 @@ const Admin = () => {
             <AdminReferralSettings />
           </TabsContent>
 
-          <TabsContent value="bonus-codes" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
-            <AdminBonusCodes />
+          <TabsContent value="daily-tasks" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminDailyTasks />
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
