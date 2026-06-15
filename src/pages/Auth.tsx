@@ -9,6 +9,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { z } from "zod";
+
+const phoneSchema = z
+  .string()
+  .trim()
+  .min(7, "Phone number is too short")
+  .max(20, "Phone number is too long")
+  .regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number (digits only)");
+
+const passwordSchema = z
+  .string()
+  .min(6, "Password must be at least 6 characters")
+  .max(72, "Password must be 72 characters or fewer");
+
+const loginSchema = z.object({
+  phone: phoneSchema,
+  password: z.string().min(1, "Password is required").max(72),
+});
+
+const signupSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name is required").max(100, "Full name is too long"),
+  phone: phoneSchema,
+  password: passwordSchema,
+  referralCode: z
+    .string()
+    .trim()
+    .min(4, "Referral code is required")
+    .max(20, "Referral code is too long")
+    .regex(/^[a-zA-Z0-9]+$/, "Referral code must be alphanumeric"),
+});
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -33,9 +63,19 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    const { error } = await signIn(loginPhone, loginPassword);
+    const parsed = loginSchema.safeParse({ phone: loginPhone, password: loginPassword });
+    if (!parsed.success) {
+      toast({
+        variant: "destructive",
+        title: "Invalid input",
+        description: parsed.error.errors[0]?.message ?? "Please check your input",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await signIn(parsed.data.phone, parsed.data.password);
 
     if (error) {
       toast({
@@ -55,28 +95,29 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!referralCode || referralCode.trim() === "") {
-      toast({
-        variant: "destructive",
-        title: "Referral Code Required",
-        description: "You must provide a valid referral code to sign up.",
-      });
-      return;
-    }
 
-    if (!signupFullName || signupFullName.trim() === "") {
+    const parsed = signupSchema.safeParse({
+      fullName: signupFullName,
+      phone: signupPhone,
+      password: signupPassword,
+      referralCode,
+    });
+    if (!parsed.success) {
       toast({
         variant: "destructive",
-        title: "Full Name Required",
-        description: "Please enter your full name.",
+        title: "Invalid input",
+        description: parsed.error.errors[0]?.message ?? "Please check your input",
       });
       return;
     }
 
     setIsLoading(true);
-
-    const { error } = await signUp(signupPhone, signupPassword, referralCode, signupFullName);
+    const { error } = await signUp(
+      parsed.data.phone,
+      parsed.data.password,
+      parsed.data.referralCode,
+      parsed.data.fullName,
+    );
 
     if (error) {
       toast({
