@@ -549,7 +549,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_bonus_code: { Args: { _code: string }; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
+      get_user_id_by_referral_code: { Args: { _code: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
