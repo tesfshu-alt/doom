@@ -177,7 +177,7 @@ const Dashboard = () => {
             <div className="relative z-10 text-center px-4 space-y-6 animate-fade-in">
               <h1 className="text-5xl md:text-7xl font-black tracking-tight">
                 <span className="bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 bg-clip-text text-transparent">
-                  DOOM
+                  DANGOTE
                 </span>
               </h1>
               <p className="text-xl text-emerald-100 max-w-md mx-auto">

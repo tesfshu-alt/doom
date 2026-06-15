@@ -50,9 +50,9 @@ const About = () => {
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 text-white space-y-4">
             <div className="flex items-center gap-4">
-              <img src={doomLogo} alt="Doom" className="w-20 h-20 object-contain" />
+              <img src={doomLogo} alt="Dangote" className="w-20 h-20 object-contain" />
               <div>
-                <h2 className="text-2xl font-bold">Doom</h2>
+                <h2 className="text-2xl font-bold">Dangote</h2>
                 <p className="text-white/90">Technology Investment Platform</p>
               </div>
             </div>
@@ -68,12 +68,12 @@ const About = () => {
               <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
-              <CardTitle className="text-lg">About Doom</CardTitle>
+              <CardTitle className="text-lg">About Dangote</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
             <p>
-              <strong className="text-foreground">Doom</strong> is a premier vendor and investor specializing in cutting-edge technologies. We invest in a diverse portfolio including electronics, automobiles, mobile devices, aircraft, and other innovative technologies.
+              <strong className="text-foreground">Dangote</strong> is a premier vendor and investor specializing in cutting-edge technologies. We invest in a diverse portfolio including electronics, automobiles, mobile devices, aircraft, and other innovative technologies.
             </p>
             <p>
               Our platform allows users to participate in technology investments and earn daily returns. User payments are processed using the current dollar exchange rate and credited directly in the country's local currency (ETB). We are not a forex exchanger - we are a technology investment platform.
@@ -110,7 +110,7 @@ const About = () => {
         </Card>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Why Choose Doom?</h3>
+          <h3 className="text-lg font-semibold">Why Choose Dangote?</h3>
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (

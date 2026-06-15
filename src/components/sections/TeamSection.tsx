@@ -146,7 +146,7 @@ const referralLink = profile
   : '';
 
 
-  const shareMessage = `🚗 Your dream is here, join us now!\n\nStart earning daily income with DOOM - the ultimate car investment platform.\n\n👉 ${referralLink}`;
+  const shareMessage = `🚗 Your dream is here, join us now!\n\nStart earning daily income with DANGOTE - the ultimate car investment platform.\n\n👉 ${referralLink}`;
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink);
@@ -157,7 +157,7 @@ const referralLink = profile
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'DOOM - Your Dream is Here',
+          title: 'DANGOTE - Your Dream is Here',
           text: shareMessage,
         });
         toast({ title: "Shared!", description: "Referral link shared successfully" });
@@ -183,10 +183,10 @@ const referralLink = profile
       <Card className="shadow-elevated bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-900 border-2 border-emerald-500/30">
         <CardContent className="p-4 space-y-4">
           <div className="flex items-center gap-3">
-            <img src={doomLogo} alt="Doom" className="w-16 h-16 object-contain" />
+            <img src={doomLogo} alt="Dangote" className="w-16 h-16 object-contain" />
             <div className="text-white">
               <p className="text-lg font-bold">Your Dream is Here!</p>
-              <p className="text-xs text-emerald-300">Share & Earn with DOOM</p>
+              <p className="text-xs text-emerald-300">Share & Earn with DANGOTE</p>
             </div>
           </div>
           
