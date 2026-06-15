@@ -66,9 +66,9 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader className="text-center space-y-4">
-          <img src={doomLogo} alt="Doom" className="w-32 h-32 mx-auto object-contain" />
+          <img src={doomLogo} alt="Dangote" className="w-32 h-32 mx-auto object-contain" />
           <DialogTitle className="text-2xl font-bold">
-            {settings?.title || 'Welcome to Doom'}
+            {settings?.title || 'Welcome to Dangote'}
           </DialogTitle>
           <p className="text-lg text-emerald-400 font-semibold">Your dream is here!</p>
         </DialogHeader>
