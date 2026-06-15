@@ -12,11 +12,23 @@ serve(async (req) => {
   }
 
   try {
+    // Require shared secret to prevent unauthenticated abuse
+    const expectedSecret = Deno.env.get('INCOME_DISTRIBUTOR_SECRET');
+    const providedSecret =
+      req.headers.get('x-distributor-secret') ??
+      req.headers.get('X-Distributor-Secret');
+    if (!expectedSecret || providedSecret !== expectedSecret) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     console.log('Starting hourly income distribution...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get all active user products with their product details
