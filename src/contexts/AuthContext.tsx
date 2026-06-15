@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
 
     const TIMEOUT_DURATION = 2 * 60 * 1000; // 2 minutes in milliseconds
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const resetTimeout = () => {
       clearTimeout(timeoutId);
@@ -83,17 +83,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: { message: "Referral code is required to sign up" } };
     }
 
-    const { data: referrer, error: referrerError } = await supabase
-      .from('profiles')
-      .select('id')
-      .ilike('referral_code', referralCode.trim())
-      .maybeSingle();
-    
+    const { data: referrerId, error: referrerError } = await supabase
+      .rpc('get_user_id_by_referral_code', { _code: referralCode.trim() });
+
     if (referrerError) {
       return { error: { message: `Database error: ${referrerError.message}` } };
     }
-    
-    if (!referrer) {
+
+    if (!referrerId) {
       return { error: { message: "Invalid referral code. Please check and try again." } };
     }
 
