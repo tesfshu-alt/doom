@@ -63,9 +63,19 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    const { error } = await signIn(loginPhone, loginPassword);
+    const parsed = loginSchema.safeParse({ phone: loginPhone, password: loginPassword });
+    if (!parsed.success) {
+      toast({
+        variant: "destructive",
+        title: "Invalid input",
+        description: parsed.error.errors[0]?.message ?? "Please check your input",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await signIn(parsed.data.phone, parsed.data.password);
 
     if (error) {
       toast({
@@ -85,28 +95,29 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!referralCode || referralCode.trim() === "") {
-      toast({
-        variant: "destructive",
-        title: "Referral Code Required",
-        description: "You must provide a valid referral code to sign up.",
-      });
-      return;
-    }
 
-    if (!signupFullName || signupFullName.trim() === "") {
+    const parsed = signupSchema.safeParse({
+      fullName: signupFullName,
+      phone: signupPhone,
+      password: signupPassword,
+      referralCode,
+    });
+    if (!parsed.success) {
       toast({
         variant: "destructive",
-        title: "Full Name Required",
-        description: "Please enter your full name.",
+        title: "Invalid input",
+        description: parsed.error.errors[0]?.message ?? "Please check your input",
       });
       return;
     }
 
     setIsLoading(true);
-
-    const { error } = await signUp(signupPhone, signupPassword, referralCode, signupFullName);
+    const { error } = await signUp(
+      parsed.data.phone,
+      parsed.data.password,
+      parsed.data.referralCode,
+      parsed.data.fullName,
+    );
 
     if (error) {
       toast({
