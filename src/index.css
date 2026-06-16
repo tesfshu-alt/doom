@@ -55,13 +55,13 @@ All colors MUST be HSL.
 
   .dark {
     --background: 140 30% 6%;
-    --foreground: 140 20% 95%;
+    --foreground: 18 80% 60%;
 
     --card: 140 25% 10%;
-    --card-foreground: 140 20% 95%;
+    --card-foreground: 18 80% 60%;
 
     --popover: 140 25% 10%;
-    --popover-foreground: 140 20% 95%;
+    --popover-foreground: 18 80% 60%;
 
     --primary: 142 76% 45%;
     --primary-foreground: 0 0% 100%;
