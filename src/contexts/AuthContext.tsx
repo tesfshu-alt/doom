@@ -60,7 +60,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
 
         if (event === 'SIGNED_IN' && session?.user) {
+          sessionStorage.setItem('show_welcome', '1');
           navigate('/');
+        }
+        if (event === 'SIGNED_OUT') {
+          sessionStorage.removeItem('show_welcome');
         }
       }
     );

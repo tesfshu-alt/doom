@@ -26,6 +26,7 @@ import AdminPasswordReset from "./admin/AdminPasswordReset";
 import AdminDailyTasks from "./admin/AdminDailyTasks";
 import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 import AdminPlatformSettings from "./admin/AdminPlatformSettings";
+import AdminAdvertisements from "./admin/AdminAdvertisements";
 import AdminExchangeRate from "./admin/AdminExchangeRate";
 import RechargeApprovalCard from "@/components/RechargeApprovalCard";
 
@@ -408,6 +409,7 @@ const Admin = () => {
               <TabsTrigger value="support" className="text-xs px-2 py-1.5">Support</TabsTrigger>
               <TabsTrigger value="withdrawal-fee" className="text-xs px-2 py-1.5">W.Fee</TabsTrigger>
               <TabsTrigger value="exchange-rate" className="text-xs px-2 py-1.5">Rate</TabsTrigger>
+              <TabsTrigger value="ads" className="text-xs px-2 py-1.5">Ads</TabsTrigger>
               <TabsTrigger value="settings" className="text-xs px-2 py-1.5">Settings</TabsTrigger>
             </TabsList>
           </div>
@@ -517,6 +519,10 @@ const Admin = () => {
 
           <TabsContent value="exchange-rate" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminExchangeRate />
+          </TabsContent>
+
+          <TabsContent value="ads" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminAdvertisements />
           </TabsContent>
 
           <TabsContent value="settings" className="max-h-[calc(100vh-250px)] overflow-y-auto">

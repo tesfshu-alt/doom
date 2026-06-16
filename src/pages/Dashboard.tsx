@@ -30,8 +30,9 @@ const Dashboard = () => {
   const [showHero, setShowHero] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user && sessionStorage.getItem('show_welcome') === '1') {
       setShowWelcomePopup(true);
+      sessionStorage.removeItem('show_welcome');
     }
   }, [user]);
 
