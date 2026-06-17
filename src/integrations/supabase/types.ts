@@ -479,6 +479,7 @@ export type Database = {
           expiry_date: string
           id: string
           is_active: boolean
+          last_income_claim_date: string | null
           product_id: string
           purchase_date: string
           recharge_id: string
@@ -489,6 +490,7 @@ export type Database = {
           expiry_date: string
           id?: string
           is_active?: boolean
+          last_income_claim_date?: string | null
           product_id: string
           purchase_date?: string
           recharge_id: string
@@ -499,6 +501,7 @@ export type Database = {
           expiry_date?: string
           id?: string
           is_active?: boolean
+          last_income_claim_date?: string | null
           product_id?: string
           purchase_date?: string
           recharge_id?: string
@@ -616,6 +619,10 @@ export type Database = {
     }
     Functions: {
       claim_bonus_code: { Args: { _code: string }; Returns: number }
+      claim_package_daily_income: {
+        Args: { _user_product_id: string }
+        Returns: Json
+      }
       complete_daily_task: { Args: never; Returns: Json }
       generate_referral_code: { Args: never; Returns: string }
       get_user_id_by_referral_code: { Args: { _code: string }; Returns: string }

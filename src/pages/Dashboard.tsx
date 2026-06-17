@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import WelcomePopup from "@/components/WelcomePopup";
-import DailyTasksWidget from "@/components/DailyTasksWidget";
+
 import heroBg from "@/assets/hero-bg.jpg";
 import { maskPhoneNumber } from "@/lib/maskUtils";
 
@@ -410,9 +410,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
-
-          {/* Daily Tasks */}
-          <DailyTasksWidget />
         </div>
       </div>
 

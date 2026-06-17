@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRightLeft, TrendingUp, Calendar, DollarSign, CheckCircle, Lock } from "lucide-react";
+import { ArrowRightLeft, TrendingUp, Calendar, DollarSign, CheckCircle, Lock, Gamepad2 } from "lucide-react";
+import TapCoinsGame from "@/components/TapCoinsGame";
 import package1 from "@/assets/products/package-1.jpg";
 import package2 from "@/assets/products/package-2.jpg";
 import package3 from "@/assets/products/package-3.jpg";
@@ -16,12 +17,29 @@ import package5 from "@/assets/products/package-5.jpg";
 import package6 from "@/assets/products/package-6.jpg";
 import package7 from "@/assets/products/package-7.jpg";
 
+const todayEAT = () => {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Addis_Ababa",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return fmt.format(new Date());
+};
+
+const daysBetween = (a: string, b: string) => {
+  const da = new Date(a + "T00:00:00Z").getTime();
+  const db = new Date(b + "T00:00:00Z").getTime();
+  return Math.max(0, Math.round((db - da) / 86400000));
+};
+
 const ProductsSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const productImages = [package1, package2, package3, package4, package5, package6, package7];
+  const [gameFor, setGameFor] = useState<null | { id: string; name: string; pendingDays: number; potentialEtb: number }>(null);
 
   const { data: mainBalance } = useMainBalance(user?.id);
 
@@ -54,14 +72,16 @@ const ProductsSection = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_products')
-        .select('product_id')
+        .select('id, product_id, purchase_date, last_income_claim_date, expiry_date')
         .eq('user_id', user?.id)
         .eq('is_active', true);
       if (error) throw error;
-      return data?.map(up => up.product_id) || [];
+      return data || [];
     },
     enabled: !!user,
   });
+
+  const ownedProductIds = userProducts?.map((up: any) => up.product_id) || [];
 
   const buyProductMutation = useMutation({
     mutationFn: async (product: any) => {
@@ -181,8 +201,11 @@ const ProductsSection = () => {
   };
 
   const isProductOwned = (productId: string) => {
-    return userProducts?.includes(productId) || false;
+    return ownedProductIds.includes(productId);
   };
+
+  const getOwnedRow = (productId: string) =>
+    userProducts?.find((up: any) => up.product_id === productId);
 
   if (isLoading) {
     return (
@@ -269,12 +292,32 @@ const ProductsSection = () => {
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                {owned ? (
-                  <Button disabled className="w-full bg-emerald-600 hover:bg-emerald-600">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Working - Generating Income
-                  </Button>
-                ) : (
+                {owned ? (() => {
+                  const row: any = getOwnedRow(product.id);
+                  const today = todayEAT();
+                  const lastClaim: string = row?.last_income_claim_date
+                    || (row?.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : today);
+                  const pendingDays = Math.min(7, daysBetween(lastClaim, today));
+                  const potentialEtb = pendingDays * Number(product.daily_income) * ETB_TO_USDT_RATE;
+                  const canPlay = pendingDays > 0;
+                  return (
+                    <Button
+                      onClick={() => canPlay && setGameFor({
+                        id: row.id,
+                        name: product.name,
+                        pendingDays,
+                        potentialEtb,
+                      })}
+                      disabled={!canPlay}
+                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white"
+                    >
+                      <Gamepad2 className="h-4 w-4 mr-2" />
+                      {canPlay
+                        ? `Play to claim ETB ${potentialEtb.toFixed(2)}${pendingDays > 1 ? ` (${pendingDays} days)` : ''}`
+                        : 'Played today — come back tomorrow'}
+                    </Button>
+                  );
+                })() : (
                   <Button 
                     onClick={() => handleBuyProduct(product)} 
                     className="w-full" 
@@ -289,6 +332,18 @@ const ProductsSection = () => {
           );
         })}
       </div>
+
+      {gameFor && user && (
+        <TapCoinsGame
+          open={!!gameFor}
+          onOpenChange={(v) => !v && setGameFor(null)}
+          userProductId={gameFor.id}
+          productName={gameFor.name}
+          pendingDays={gameFor.pendingDays}
+          potentialEtb={gameFor.potentialEtb}
+          userId={user.id}
+        />
+      )}
     </div>
   );
 };
