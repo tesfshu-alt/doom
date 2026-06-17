@@ -94,29 +94,9 @@ serve(async (req) => {
           continue;
         }
 
-        // Credit hourly income (1/24th of daily income)
-        // daily_income is stored in USDT, convert to ETB for crediting
-        const dailyIncomeUSDT = userProduct.products.daily_income;
-        const dailyIncomeETB = dailyIncomeUSDT * exchangeRate;
-        const hourlyIncomeETB = dailyIncomeETB / 24;
-        
-        console.log(`Crediting ETB ${hourlyIncomeETB.toFixed(2)} (hourly, from $${dailyIncomeUSDT}/day) to user ${userProduct.user_id} for product ${userProduct.products.name}`);
-        
-        const { error: transactionError } = await supabase
-          .from('transactions')
-          .insert({
-            user_id: userProduct.user_id,
-            amount: hourlyIncomeETB,
-            type: 'daily_income',
-            description: `Hourly income from ${userProduct.products.name} ($${(dailyIncomeUSDT / 24).toFixed(4)} USDT)`,
-          });
-
-        if (transactionError) {
-          console.error(`Error creating transaction for user ${userProduct.user_id}:`, transactionError);
-          errorCount++;
-        } else {
-          successCount++;
-        }
+        // Income is now claimed by users via the per-package daily game.
+        // This function only handles expiry; no automatic crediting.
+        successCount++;
       } catch (error) {
         console.error(`Error processing product ${userProduct.id}:`, error);
         errorCount++;
