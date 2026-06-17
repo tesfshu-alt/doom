@@ -201,8 +201,11 @@ const ProductsSection = () => {
   };
 
   const isProductOwned = (productId: string) => {
-    return userProducts?.includes(productId) || false;
+    return ownedProductIds.includes(productId);
   };
+
+  const getOwnedRow = (productId: string) =>
+    userProducts?.find((up: any) => up.product_id === productId);
 
   if (isLoading) {
     return (
