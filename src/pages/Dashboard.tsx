@@ -410,9 +410,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
-
-          {/* Daily Tasks */}
-          <DailyTasksWidget />
         </div>
       </div>
 
