@@ -292,12 +292,32 @@ const ProductsSection = () => {
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                {owned ? (
-                  <Button disabled className="w-full bg-emerald-600 hover:bg-emerald-600">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Working - Generating Income
-                  </Button>
-                ) : (
+                {owned ? (() => {
+                  const row: any = getOwnedRow(product.id);
+                  const today = todayEAT();
+                  const lastClaim: string = row?.last_income_claim_date
+                    || (row?.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : today);
+                  const pendingDays = Math.min(7, daysBetween(lastClaim, today));
+                  const potentialEtb = pendingDays * Number(product.daily_income) * ETB_TO_USDT_RATE;
+                  const canPlay = pendingDays > 0;
+                  return (
+                    <Button
+                      onClick={() => canPlay && setGameFor({
+                        id: row.id,
+                        name: product.name,
+                        pendingDays,
+                        potentialEtb,
+                      })}
+                      disabled={!canPlay}
+                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white"
+                    >
+                      <Gamepad2 className="h-4 w-4 mr-2" />
+                      {canPlay
+                        ? `Play to claim ETB ${potentialEtb.toFixed(2)}${pendingDays > 1 ? ` (${pendingDays} days)` : ''}`
+                        : 'Played today — come back tomorrow'}
+                    </Button>
+                  );
+                })() : (
                   <Button 
                     onClick={() => handleBuyProduct(product)} 
                     className="w-full" 
@@ -312,6 +332,18 @@ const ProductsSection = () => {
           );
         })}
       </div>
+
+      {gameFor && user && (
+        <TapCoinsGame
+          open={!!gameFor}
+          onOpenChange={(v) => !v && setGameFor(null)}
+          userProductId={gameFor.id}
+          productName={gameFor.name}
+          pendingDays={gameFor.pendingDays}
+          potentialEtb={gameFor.potentialEtb}
+          userId={user.id}
+        />
+      )}
     </div>
   );
 };
