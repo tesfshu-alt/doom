@@ -39,6 +39,7 @@ const ProductsSection = () => {
   const queryClient = useQueryClient();
   
   const productImages = [package1, package2, package3, package4, package5, package6, package7];
+  const [gameFor, setGameFor] = useState<null | { id: string; name: string; pendingDays: number; potentialEtb: number }>(null);
 
   const { data: mainBalance } = useMainBalance(user?.id);
 
