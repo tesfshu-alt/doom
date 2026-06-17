@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRightLeft, TrendingUp, Calendar, DollarSign, CheckCircle, Lock } from "lucide-react";
+import { ArrowRightLeft, TrendingUp, Calendar, DollarSign, CheckCircle, Lock, Gamepad2 } from "lucide-react";
+import TapCoinsGame from "@/components/TapCoinsGame";
 import package1 from "@/assets/products/package-1.jpg";
 import package2 from "@/assets/products/package-2.jpg";
 import package3 from "@/assets/products/package-3.jpg";
@@ -15,6 +16,22 @@ import package4 from "@/assets/products/package-4.jpg";
 import package5 from "@/assets/products/package-5.jpg";
 import package6 from "@/assets/products/package-6.jpg";
 import package7 from "@/assets/products/package-7.jpg";
+
+const todayEAT = () => {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Addis_Ababa",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return fmt.format(new Date());
+};
+
+const daysBetween = (a: string, b: string) => {
+  const da = new Date(a + "T00:00:00Z").getTime();
+  const db = new Date(b + "T00:00:00Z").getTime();
+  return Math.max(0, Math.round((db - da) / 86400000));
+};
 
 const ProductsSection = () => {
   const { user } = useAuth();
