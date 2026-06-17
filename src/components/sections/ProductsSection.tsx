@@ -72,14 +72,16 @@ const ProductsSection = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_products')
-        .select('product_id')
+        .select('id, product_id, purchase_date, last_income_claim_date, expiry_date')
         .eq('user_id', user?.id)
         .eq('is_active', true);
       if (error) throw error;
-      return data?.map(up => up.product_id) || [];
+      return data || [];
     },
     enabled: !!user,
   });
+
+  const ownedProductIds = userProducts?.map((up: any) => up.product_id) || [];
 
   const buyProductMutation = useMutation({
     mutationFn: async (product: any) => {
