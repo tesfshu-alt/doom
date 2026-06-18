@@ -187,6 +187,10 @@ const TapCoinsGame = ({
   const tapCoin = (id: number, value: number) => {
     setCoins((prev) => prev.map((c) => (c.id === id ? { ...c, caught: true } : c)));
     setScore((s) => Math.max(0, s + value));
+    if (value < 0) {
+      bombsHitRef.current += 1;
+      setBombsHit((b) => b + 1);
+    }
   };
 
   const progressPct = Math.min(100, (score / TARGET_SCORE) * 100);
