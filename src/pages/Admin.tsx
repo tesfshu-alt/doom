@@ -28,6 +28,7 @@ import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 import AdminPlatformSettings from "./admin/AdminPlatformSettings";
 import AdminAdvertisements from "./admin/AdminAdvertisements";
 import AdminExchangeRate from "./admin/AdminExchangeRate";
+import AdminGameSettings from "./admin/AdminGameSettings";
 import RechargeApprovalCard from "@/components/RechargeApprovalCard";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
@@ -410,6 +411,7 @@ const Admin = () => {
               <TabsTrigger value="withdrawal-fee" className="text-xs px-2 py-1.5">W.Fee</TabsTrigger>
               <TabsTrigger value="exchange-rate" className="text-xs px-2 py-1.5">Rate</TabsTrigger>
               <TabsTrigger value="ads" className="text-xs px-2 py-1.5">Ads</TabsTrigger>
+              <TabsTrigger value="game" className="text-xs px-2 py-1.5">Game</TabsTrigger>
               <TabsTrigger value="settings" className="text-xs px-2 py-1.5">Settings</TabsTrigger>
             </TabsList>
           </div>
@@ -523,6 +525,10 @@ const Admin = () => {
 
           <TabsContent value="ads" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminAdvertisements />
+          </TabsContent>
+
+          <TabsContent value="game" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminGameSettings />
           </TabsContent>
 
           <TabsContent value="settings" className="max-h-[calc(100vh-250px)] overflow-y-auto">

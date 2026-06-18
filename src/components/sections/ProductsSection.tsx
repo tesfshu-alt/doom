@@ -289,6 +289,12 @@ const ProductsSection = () => {
                       <p className="text-xs text-muted-foreground">ETB {totalIncomeETB}</p>
                     </div>
                   </div>
+                  {!owned && (
+                    <div className="mt-3 flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+                      <Gamepad2 className="h-4 w-4 shrink-0" />
+                      <span>Buy this package to unlock the daily tap-to-collect mini-game and claim your income.</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0">
