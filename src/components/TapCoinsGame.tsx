@@ -33,8 +33,9 @@ interface FallingCoin {
   caught: boolean;
 }
 
-const DURATION_MS = 12000;
-const TARGET_SCORE = 20;
+const DEFAULT_DURATION_MS = 12000;
+const DEFAULT_TARGET_SCORE = 20;
+const DEFAULT_BOMB_PENALTY = 1;
 
 const TapCoinsGame = ({
   open,
