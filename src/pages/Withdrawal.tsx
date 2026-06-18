@@ -336,7 +336,7 @@ const Withdrawal = () => {
                 <Alert className="border-emerald-500/50 bg-emerald-500/10">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                   <AlertDescription className="text-emerald-300">
-                    <strong>Important:</strong> Your withdrawal will be credited directly to your bank account in ETB (Ethiopian Birr), calculated at the current USDT exchange rate.
+                    <strong>Important:</strong> Your withdrawal will be credited directly to your bank account in ETB (Ethiopian Birr).
                   </AlertDescription>
                 </Alert>
 
