@@ -225,6 +225,7 @@ const TapCoinsGame = ({
               <p>🪙 Gold coin = +1</p>
               <p>✨ Sparkle coin = +3</p>
               <p>💣 Bomb = −1 (don't tap!)</p>
+              <p className="text-yellow-300">🎁 No bombs hit = +1 to 5 ETB bonus!</p>
             </div>
             <Button
               className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 text-white font-bold"
