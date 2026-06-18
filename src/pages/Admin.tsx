@@ -28,6 +28,7 @@ import AdminWithdrawalFee from "./admin/AdminWithdrawalFee";
 import AdminPlatformSettings from "./admin/AdminPlatformSettings";
 import AdminAdvertisements from "./admin/AdminAdvertisements";
 import AdminExchangeRate from "./admin/AdminExchangeRate";
+import AdminGameSettings from "./admin/AdminGameSettings";
 import RechargeApprovalCard from "@/components/RechargeApprovalCard";
 
 const UserHistoryContent = ({ userId }: { userId: string }) => {
