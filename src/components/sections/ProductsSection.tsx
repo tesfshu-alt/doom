@@ -279,14 +279,12 @@ const ProductsSection = () => {
                     <div className="bg-muted/50 rounded p-2">
                       <TrendingUp className="h-3 w-3 mx-auto mb-1 text-secondary" />
                       <p className="text-xs text-muted-foreground">Daily</p>
-                      <p className="text-sm font-semibold text-emerald-400">${product.daily_income}</p>
-                      <p className="text-xs text-muted-foreground">ETB {dailyIncomeETB}</p>
+                      <p className="text-sm font-semibold text-emerald-400">ETB {dailyIncomeETB}</p>
                     </div>
                     <div className="bg-muted/50 rounded p-2">
                       <DollarSign className="h-3 w-3 mx-auto mb-1 text-accent" />
                       <p className="text-xs text-muted-foreground">Total</p>
-                      <p className="text-sm font-semibold text-emerald-400">${product.total_income}</p>
-                      <p className="text-xs text-muted-foreground">ETB {totalIncomeETB}</p>
+                      <p className="text-sm font-semibold text-emerald-400">ETB {totalIncomeETB}</p>
                     </div>
                   </div>
                   {!owned && (
