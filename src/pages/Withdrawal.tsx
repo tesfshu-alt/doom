@@ -228,7 +228,6 @@ const Withdrawal = () => {
           </CardHeader>
           <CardContent className="space-y-1">
             <p className="text-3xl font-bold text-primary">ETB {availableBalance.toFixed(2)}</p>
-            <p className="text-lg text-emerald-500">≈ ${(availableBalance / exchangeRate).toFixed(2)} USDT</p>
           </CardContent>
         </Card>
 
