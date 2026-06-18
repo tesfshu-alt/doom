@@ -237,8 +237,11 @@ const TapCoinsGame = ({
 
         {phase === "playing" && (
           <div className="px-4 pb-4 space-y-3">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-emerald-300 font-bold">Score: {score}/{TARGET_SCORE}</span>
+              <span className={bombsHit === 0 ? "text-emerald-400" : "text-red-400"}>
+                💣 {bombsHit} {bombsHit === 0 ? "(perfect bonus!)" : "(no bonus)"}
+              </span>
               <span className="text-emerald-100/80">{(timeLeft / 1000).toFixed(1)}s</span>
             </div>
             <Progress value={progressPct} className="h-2 [&>div]:bg-emerald-400" />
