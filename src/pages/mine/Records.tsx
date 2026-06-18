@@ -220,9 +220,6 @@ const Records = () => {
                           <p className="text-lg font-bold text-primary">
                             ETB {Number(recharge.amount).toFixed(2)}
                           </p>
-                          <p className="text-xs text-emerald-500">
-                            ${(Number(recharge.amount) / exchangeRate).toFixed(2)} USDT
-                          </p>
                         </div>
                       </div>
                     </CardContent>
