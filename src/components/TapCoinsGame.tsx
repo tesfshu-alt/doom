@@ -317,9 +317,19 @@ const TapCoinsGame = ({
             {claimMutation.isPending || reward === null ? (
               <p className="text-sm text-emerald-100/70">Crediting your reward…</p>
             ) : (
-              <p className="text-lg font-bold text-emerald-200">
-                +ETB {reward.toFixed(2)} added to your balance
-              </p>
+              <div className="space-y-1">
+                <p className="text-lg font-bold text-emerald-200">
+                  +ETB {reward.toFixed(2)} daily income
+                </p>
+                {bonus > 0 && (
+                  <p className="text-sm font-bold text-yellow-300">
+                    🎁 +ETB {bonus.toFixed(2)} perfect-game bonus (no bombs)!
+                  </p>
+                )}
+                <p className="text-xs text-emerald-100/70 pt-1">
+                  Total credited: ETB {(reward + bonus).toFixed(2)}
+                </p>
+              </div>
             )}
             <Button
               className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400"
