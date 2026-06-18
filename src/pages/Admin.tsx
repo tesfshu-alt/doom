@@ -527,6 +527,10 @@ const Admin = () => {
             <AdminAdvertisements />
           </TabsContent>
 
+          <TabsContent value="game" className="max-h-[calc(100vh-250px)] overflow-y-auto">
+            <AdminGameSettings />
+          </TabsContent>
+
           <TabsContent value="settings" className="max-h-[calc(100vh-250px)] overflow-y-auto">
             <AdminPlatformSettings />
           </TabsContent>
