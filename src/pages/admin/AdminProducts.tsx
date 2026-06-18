@@ -365,13 +365,11 @@ const AdminProducts = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Daily: </span>
-                      <span className="font-semibold text-emerald-400">${product.daily_income}</span>
-                      <span className="text-xs text-muted-foreground ml-1">(ETB {dailyIncomeETB})</span>
+                      <span className="font-semibold text-emerald-400">ETB {dailyIncomeETB}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Total: </span>
-                      <span className="font-semibold text-emerald-400">${product.total_income}</span>
-                      <span className="text-xs text-muted-foreground ml-1">(ETB {totalIncomeETB})</span>
+                      <span className="font-semibold text-emerald-400">ETB {totalIncomeETB}</span>
                     </div>
                   </div>
                   </div>
