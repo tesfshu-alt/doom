@@ -110,8 +110,11 @@ const TapCoinsGame = ({
     setPhase("intro");
     setCoins([]);
     setScore(0);
+    setBombsHit(0);
+    bombsHitRef.current = 0;
     setTimeLeft(DURATION_MS);
     setReward(null);
+    setBonus(0);
     lastSpawnRef.current = 0;
     nextIdRef.current = 1;
   };
