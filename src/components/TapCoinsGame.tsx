@@ -80,20 +80,24 @@ const TapCoinsGame = ({
 
   const claimMutation = useMutation({
     mutationFn: async () => {
+      const perfect = bombsHitRef.current === 0;
       const { data, error } = await supabase.rpc("claim_package_daily_income", {
         _user_product_id: userProductId,
-      });
+        _perfect: perfect,
+      } as any);
       if (error) throw new Error(error.message);
-      return data as { reward_etb: number; days_credited: number; daily_etb: number };
+      return data as { reward_etb: number; days_credited: number; daily_etb: number; bonus_etb: number };
     },
     onSuccess: (data) => {
       setReward(Number(data.reward_etb));
+      setBonus(Number(data.bonus_etb || 0));
       queryClient.invalidateQueries({ queryKey: ["mainBalance", userId] });
       queryClient.invalidateQueries({ queryKey: ["availableBalance", userId] });
       queryClient.invalidateQueries({ queryKey: ["packageClaims", userId] });
+      const total = Number(data.reward_etb) + Number(data.bonus_etb || 0);
       toast({
         title: "Reward credited!",
-        description: `ETB ${Number(data.reward_etb).toFixed(2)} added (${data.days_credited} day${data.days_credited > 1 ? "s" : ""}).`,
+        description: `ETB ${total.toFixed(2)} added (${data.days_credited} day${data.days_credited > 1 ? "s" : ""}${Number(data.bonus_etb || 0) > 0 ? ` + ETB ${Number(data.bonus_etb).toFixed(2)} perfect bonus` : ""}).`,
       });
     },
     onError: (e: Error) => {
