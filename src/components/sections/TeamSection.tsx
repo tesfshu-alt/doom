@@ -234,7 +234,7 @@ const referralLink = profile
               <span className="text-xs">Total Earned</span>
             </div>
             <p className="text-2xl font-bold text-accent">ETB {totalEarned.toFixed(0)}</p>
-            <p className="text-xs text-emerald-500">${(totalEarned / exchangeRate).toFixed(2)} USDT</p>
+            
           </CardContent>
         </Card>
       </div>
