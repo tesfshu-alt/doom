@@ -181,9 +181,6 @@ const Records = () => {
                           <p className={`text-lg font-bold ${getTransactionAmountColor(transaction.type)}`}>
                             {getTransactionSign(transaction.type)}ETB {Math.abs(Number(transaction.amount)).toFixed(2)}
                           </p>
-                          <p className="text-xs text-emerald-500">
-                            ${(Math.abs(Number(transaction.amount)) / exchangeRate).toFixed(2)} USDT
-                          </p>
                         </div>
                       </div>
                     </CardContent>
