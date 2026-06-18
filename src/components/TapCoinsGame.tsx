@@ -68,12 +68,15 @@ const TapCoinsGame = ({
   const [phase, setPhase] = useState<"intro" | "playing" | "won" | "lost">("intro");
   const [coins, setCoins] = useState<FallingCoin[]>([]);
   const [score, setScore] = useState(0);
+  const [bombsHit, setBombsHit] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION_MS);
   const [reward, setReward] = useState<number | null>(null);
+  const [bonus, setBonus] = useState<number>(0);
   const rafRef = useRef<number>();
   const lastSpawnRef = useRef(0);
   const startRef = useRef(0);
   const nextIdRef = useRef(1);
+  const bombsHitRef = useRef(0);
 
   const claimMutation = useMutation({
     mutationFn: async () => {
