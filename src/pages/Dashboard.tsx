@@ -226,8 +226,7 @@ const Dashboard = () => {
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xs">Daily Income</span>
                 </div>
-                <p className="text-xl font-bold text-emerald-400">${totalDailyIncomeUSDT.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">ETB {totalDailyIncomeETB.toFixed(2)}</p>
+                <p className="text-xl font-bold text-emerald-400">ETB {totalDailyIncomeETB.toFixed(2)}</p>
               </CardContent>
             </Card>
           </div>
