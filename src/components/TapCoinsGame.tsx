@@ -48,6 +48,23 @@ const TapCoinsGame = ({
 }: Props) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const { data: gameCfg } = useQuery({
+    queryKey: ["tapGameSettings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_settings")
+        .select("setting_value")
+        .eq("setting_key", "tap_game")
+        .maybeSingle();
+      return (data?.setting_value as any) || {};
+    },
+  });
+
+  const TARGET_SCORE = Number(gameCfg?.target_score) || DEFAULT_TARGET_SCORE;
+  const DURATION_MS = (Number(gameCfg?.duration_seconds) || DEFAULT_DURATION_MS / 1000) * 1000;
+  const BOMB_PENALTY = gameCfg?.bomb_penalty ?? DEFAULT_BOMB_PENALTY;
+
   const [phase, setPhase] = useState<"intro" | "playing" | "won" | "lost">("intro");
   const [coins, setCoins] = useState<FallingCoin[]>([]);
   const [score, setScore] = useState(0);
