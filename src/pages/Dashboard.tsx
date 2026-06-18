@@ -206,7 +206,6 @@ const Dashboard = () => {
             <CardContent className="p-6 text-center space-y-2">
               <p className="text-sm text-emerald-300/90">Available Balance</p>
               <p className="text-4xl font-bold text-white">ETB {(mainBalance || 0).toFixed(2)}</p>
-              <p className="text-lg text-emerald-400">≈ ${((mainBalance || 0) / exchangeRate).toFixed(2)} USDT</p>
             </CardContent>
           </Card>
 
