@@ -266,9 +266,6 @@ const Records = () => {
                           <p className="text-lg font-bold text-red-600">
                             -ETB {Number(withdrawal.amount).toFixed(2)}
                           </p>
-                          <p className="text-xs text-emerald-500">
-                            ${(Number(withdrawal.amount) / exchangeRate).toFixed(2)} USDT
-                          </p>
                         </div>
                       </div>
                     </CardContent>
