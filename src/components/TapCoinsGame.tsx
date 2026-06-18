@@ -128,7 +128,7 @@ const TapCoinsGame = ({
       if (t - lastSpawnRef.current > spawnInterval) {
         lastSpawnRef.current = t;
         const roll = Math.random();
-        const value = roll < 0.1 ? 3 : roll < 0.22 ? -1 : 1;
+        const value = roll < 0.1 ? 3 : roll < 0.22 ? -BOMB_PENALTY : 1;
         setCoins((prev) => [
           ...prev,
           {
