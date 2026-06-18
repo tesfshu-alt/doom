@@ -181,9 +181,6 @@ const Records = () => {
                           <p className={`text-lg font-bold ${getTransactionAmountColor(transaction.type)}`}>
                             {getTransactionSign(transaction.type)}ETB {Math.abs(Number(transaction.amount)).toFixed(2)}
                           </p>
-                          <p className="text-xs text-emerald-500">
-                            ${(Math.abs(Number(transaction.amount)) / exchangeRate).toFixed(2)} USDT
-                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -222,9 +219,6 @@ const Records = () => {
                         <div className="text-right flex-shrink-0">
                           <p className="text-lg font-bold text-primary">
                             ETB {Number(recharge.amount).toFixed(2)}
-                          </p>
-                          <p className="text-xs text-emerald-500">
-                            ${(Number(recharge.amount) / exchangeRate).toFixed(2)} USDT
                           </p>
                         </div>
                       </div>
@@ -271,9 +265,6 @@ const Records = () => {
                         <div className="text-right flex-shrink-0">
                           <p className="text-lg font-bold text-red-600">
                             -ETB {Number(withdrawal.amount).toFixed(2)}
-                          </p>
-                          <p className="text-xs text-emerald-500">
-                            ${(Number(withdrawal.amount) / exchangeRate).toFixed(2)} USDT
                           </p>
                         </div>
                       </div>

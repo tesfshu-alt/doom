@@ -68,29 +68,36 @@ const TapCoinsGame = ({
   const [phase, setPhase] = useState<"intro" | "playing" | "won" | "lost">("intro");
   const [coins, setCoins] = useState<FallingCoin[]>([]);
   const [score, setScore] = useState(0);
+  const [bombsHit, setBombsHit] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION_MS);
   const [reward, setReward] = useState<number | null>(null);
+  const [bonus, setBonus] = useState<number>(0);
   const rafRef = useRef<number>();
   const lastSpawnRef = useRef(0);
   const startRef = useRef(0);
   const nextIdRef = useRef(1);
+  const bombsHitRef = useRef(0);
 
   const claimMutation = useMutation({
     mutationFn: async () => {
+      const perfect = bombsHitRef.current === 0;
       const { data, error } = await supabase.rpc("claim_package_daily_income", {
         _user_product_id: userProductId,
-      });
+        _perfect: perfect,
+      } as any);
       if (error) throw new Error(error.message);
-      return data as { reward_etb: number; days_credited: number; daily_etb: number };
+      return data as { reward_etb: number; days_credited: number; daily_etb: number; bonus_etb: number };
     },
     onSuccess: (data) => {
       setReward(Number(data.reward_etb));
+      setBonus(Number(data.bonus_etb || 0));
       queryClient.invalidateQueries({ queryKey: ["mainBalance", userId] });
       queryClient.invalidateQueries({ queryKey: ["availableBalance", userId] });
       queryClient.invalidateQueries({ queryKey: ["packageClaims", userId] });
+      const total = Number(data.reward_etb) + Number(data.bonus_etb || 0);
       toast({
         title: "Reward credited!",
-        description: `ETB ${Number(data.reward_etb).toFixed(2)} added (${data.days_credited} day${data.days_credited > 1 ? "s" : ""}).`,
+        description: `ETB ${total.toFixed(2)} added (${data.days_credited} day${data.days_credited > 1 ? "s" : ""}${Number(data.bonus_etb || 0) > 0 ? ` + ETB ${Number(data.bonus_etb).toFixed(2)} perfect bonus` : ""}).`,
       });
     },
     onError: (e: Error) => {
@@ -103,8 +110,11 @@ const TapCoinsGame = ({
     setPhase("intro");
     setCoins([]);
     setScore(0);
+    setBombsHit(0);
+    bombsHitRef.current = 0;
     setTimeLeft(DURATION_MS);
     setReward(null);
+    setBonus(0);
     lastSpawnRef.current = 0;
     nextIdRef.current = 1;
   };
@@ -177,6 +187,10 @@ const TapCoinsGame = ({
   const tapCoin = (id: number, value: number) => {
     setCoins((prev) => prev.map((c) => (c.id === id ? { ...c, caught: true } : c)));
     setScore((s) => Math.max(0, s + value));
+    if (value < 0) {
+      bombsHitRef.current += 1;
+      setBombsHit((b) => b + 1);
+    }
   };
 
   const progressPct = Math.min(100, (score / TARGET_SCORE) * 100);
@@ -211,6 +225,7 @@ const TapCoinsGame = ({
               <p>🪙 Gold coin = +1</p>
               <p>✨ Sparkle coin = +3</p>
               <p>💣 Bomb = −1 (don't tap!)</p>
+              <p className="text-yellow-300">🎁 No bombs hit = +1 to 5 ETB bonus!</p>
             </div>
             <Button
               className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 text-white font-bold"
@@ -223,8 +238,11 @@ const TapCoinsGame = ({
 
         {phase === "playing" && (
           <div className="px-4 pb-4 space-y-3">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-emerald-300 font-bold">Score: {score}/{TARGET_SCORE}</span>
+              <span className={bombsHit === 0 ? "text-emerald-400" : "text-red-400"}>
+                💣 {bombsHit} {bombsHit === 0 ? "(perfect bonus!)" : "(no bonus)"}
+              </span>
               <span className="text-emerald-100/80">{(timeLeft / 1000).toFixed(1)}s</span>
             </div>
             <Progress value={progressPct} className="h-2 [&>div]:bg-emerald-400" />
@@ -300,9 +318,19 @@ const TapCoinsGame = ({
             {claimMutation.isPending || reward === null ? (
               <p className="text-sm text-emerald-100/70">Crediting your reward…</p>
             ) : (
-              <p className="text-lg font-bold text-emerald-200">
-                +ETB {reward.toFixed(2)} added to your balance
-              </p>
+              <div className="space-y-1">
+                <p className="text-lg font-bold text-emerald-200">
+                  +ETB {reward.toFixed(2)} daily income
+                </p>
+                {bonus > 0 && (
+                  <p className="text-sm font-bold text-yellow-300">
+                    🎁 +ETB {bonus.toFixed(2)} perfect-game bonus (no bombs)!
+                  </p>
+                )}
+                <p className="text-xs text-emerald-100/70 pt-1">
+                  Total credited: ETB {(reward + bonus).toFixed(2)}
+                </p>
+              </div>
             )}
             <Button
               className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400"

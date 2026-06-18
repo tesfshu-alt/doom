@@ -620,7 +620,7 @@ export type Database = {
     Functions: {
       claim_bonus_code: { Args: { _code: string }; Returns: number }
       claim_package_daily_income: {
-        Args: { _user_product_id: string }
+        Args: { _perfect?: boolean; _user_product_id: string }
         Returns: Json
       }
       complete_daily_task: { Args: never; Returns: Json }

@@ -206,7 +206,6 @@ const Dashboard = () => {
             <CardContent className="p-6 text-center space-y-2">
               <p className="text-sm text-emerald-300/90">Available Balance</p>
               <p className="text-4xl font-bold text-white">ETB {(mainBalance || 0).toFixed(2)}</p>
-              <p className="text-lg text-emerald-400">≈ ${((mainBalance || 0) / exchangeRate).toFixed(2)} USDT</p>
             </CardContent>
           </Card>
 
@@ -219,7 +218,6 @@ const Dashboard = () => {
                   <span className="text-xs">Investment</span>
                 </div>
                 <p className="text-xl font-bold text-white">ETB {totalInvestment.toFixed(0)}</p>
-                <p className="text-xs text-emerald-400">${(totalInvestment / exchangeRate).toFixed(2)} USDT</p>
               </CardContent>
             </Card>
             <Card className="shadow-card bg-gradient-to-br from-green-950 to-emerald-900 border border-green-500/20 animate-fade-in">
@@ -228,8 +226,7 @@ const Dashboard = () => {
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xs">Daily Income</span>
                 </div>
-                <p className="text-xl font-bold text-emerald-400">${totalDailyIncomeUSDT.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">ETB {totalDailyIncomeETB.toFixed(2)}</p>
+                <p className="text-xl font-bold text-emerald-400">ETB {totalDailyIncomeETB.toFixed(2)}</p>
               </CardContent>
             </Card>
           </div>

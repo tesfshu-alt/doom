@@ -228,7 +228,6 @@ const Withdrawal = () => {
           </CardHeader>
           <CardContent className="space-y-1">
             <p className="text-3xl font-bold text-primary">ETB {availableBalance.toFixed(2)}</p>
-            <p className="text-lg text-emerald-500">≈ ${(availableBalance / exchangeRate).toFixed(2)} USDT</p>
           </CardContent>
         </Card>
 
@@ -337,7 +336,7 @@ const Withdrawal = () => {
                 <Alert className="border-emerald-500/50 bg-emerald-500/10">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                   <AlertDescription className="text-emerald-300">
-                    <strong>Important:</strong> Your withdrawal will be credited directly to your bank account in ETB (Ethiopian Birr), calculated at the current USDT exchange rate.
+                    <strong>Important:</strong> Your withdrawal will be credited directly to your bank account in ETB (Ethiopian Birr).
                   </AlertDescription>
                 </Alert>
 
