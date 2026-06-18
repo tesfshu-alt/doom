@@ -131,13 +131,6 @@ const About = () => {
           })}
         </div>
 
-        <Card className="shadow-card bg-emerald-950/50 border-emerald-500/30">
-          <CardContent className="p-6 text-center space-y-2">
-            <p className="text-sm text-emerald-300">Current Exchange Rate</p>
-            <p className="text-3xl font-bold text-white">1 USDT = {exchangeRate} ETB</p>
-            <p className="text-xs text-muted-foreground">Payments credited in ETB at current rate</p>
-          </CardContent>
-        </Card>
       </div>
     </Layout>
   );
