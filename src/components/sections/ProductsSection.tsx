@@ -227,7 +227,7 @@ const ProductsSection = () => {
       <div className="space-y-2">
         <h2 className="text-xl font-bold">Exchange Packages</h2>
         <p className="text-sm text-muted-foreground">Your balance: <span className="font-bold text-primary">ETB {(mainBalance || 0).toFixed(2)}</span></p>
-        <p className="text-xs text-emerald-400">1 USDT = {ETB_TO_USDT_RATE} ETB</p>
+        
       </div>
 
       <div className="space-y-4">
