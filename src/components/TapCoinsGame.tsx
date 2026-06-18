@@ -247,7 +247,7 @@ const TapCoinsGame = ({
                   }}
                   aria-label="coin"
                 >
-                  {c.value === -1 ? (
+                  {c.value < 0 ? (
                     <div className="h-9 w-9 rounded-full bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center shadow-lg shadow-red-500/40 text-lg">
                       💣
                     </div>
