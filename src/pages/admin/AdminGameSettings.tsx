@@ -30,15 +30,15 @@ const AdminGameSettings = () => {
 
   const cfg = (data?.setting_value as any) || {};
   const [enabled, setEnabled] = useState(true);
-  const [targetScore, setTargetScore] = useState(20);
-  const [durationSeconds, setDurationSeconds] = useState(12);
+  const [targetScore, setTargetScore] = useState(5);
+  const [durationSeconds, setDurationSeconds] = useState(10);
   const [bombPenalty, setBombPenalty] = useState(1);
 
   useEffect(() => {
     if (cfg) {
       setEnabled(cfg.enabled ?? true);
-      setTargetScore(cfg.target_score ?? 20);
-      setDurationSeconds(cfg.duration_seconds ?? 12);
+      setTargetScore(cfg.target_score ?? 5);
+      setDurationSeconds(cfg.duration_seconds ?? 10);
       setBombPenalty(cfg.bomb_penalty ?? 1);
     }
     // eslint-disable-next-line

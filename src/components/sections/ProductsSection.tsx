@@ -287,41 +287,14 @@ const ProductsSection = () => {
                       <p className="text-sm font-semibold text-emerald-400">ETB {totalIncomeETB}</p>
                     </div>
                   </div>
-                  {!owned && (
-                    <div className="mt-3 flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
-                      <Gamepad2 className="h-4 w-4 shrink-0" />
-                      <span>Buy this package to unlock the daily tap-to-collect mini-game and claim your income.</span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                {owned ? (() => {
-                  const row: any = getOwnedRow(product.id);
-                  const today = todayEAT();
-                  const lastClaim: string = row?.last_income_claim_date
-                    || (row?.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : today);
-                  const pendingDays = Math.min(7, daysBetween(lastClaim, today));
-                  const potentialEtb = pendingDays * Number(product.daily_income) * ETB_TO_USDT_RATE;
-                  const canPlay = pendingDays > 0;
-                  return (
-                    <Button
-                      onClick={() => canPlay && setGameFor({
-                        id: row.id,
-                        name: product.name,
-                        pendingDays,
-                        potentialEtb,
-                      })}
-                      disabled={!canPlay}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white"
-                    >
-                      <Gamepad2 className="h-4 w-4 mr-2" />
-                      {canPlay
-                        ? `Play to claim ETB ${potentialEtb.toFixed(2)}${pendingDays > 1 ? ` (${pendingDays} days)` : ''}`
-                        : 'Played today — come back tomorrow'}
-                    </Button>
-                  );
-                })() : (
+                {owned ? (
+                  <div className="w-full text-center text-sm text-emerald-400 font-medium py-2">
+                    ✅ Active — play the Daily Game on the home page to claim income.
+                  </div>
+                ) : (
                   <Button 
                     onClick={() => handleBuyProduct(product)} 
                     className="w-full" 

@@ -18,6 +18,7 @@ import { maskPhoneNumber } from "@/lib/maskUtils";
 import ProductsSection from "@/components/sections/ProductsSection";
 import TeamSection from "@/components/sections/TeamSection";
 import AccountSection from "@/components/sections/AccountSection";
+import DailyGameWidget from "@/components/DailyGameWidget";
 
 type ActiveView = "home" | "products" | "team" | "account" | "records";
 
@@ -230,6 +231,9 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Daily Game */}
+          <DailyGameWidget />
 
           {/* Recharge/Product Status */}
           {latestRecharge && (
