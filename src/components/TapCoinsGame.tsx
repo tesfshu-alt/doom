@@ -16,8 +16,8 @@ import { Coins, Sparkles, Trophy } from "lucide-react";
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  userProductId: string;
-  productName: string;
+  userProductId?: string; // optional — if missing, claims ALL packages
+  productName?: string;
   pendingDays: number;
   potentialEtb: number;
   userId?: string;
@@ -25,16 +25,16 @@ interface Props {
 
 interface FallingCoin {
   id: number;
-  x: number; // 0-100 (%)
-  y: number; // 0-100 (%)
+  x: number;
+  y: number;
   speed: number;
-  value: number; // 1 = regular, 3 = bonus, -1 = bomb
+  value: number;
   rotation: number;
   caught: boolean;
 }
 
-const DEFAULT_DURATION_MS = 12000;
-const DEFAULT_TARGET_SCORE = 20;
+const DEFAULT_DURATION_MS = 10000;
+const DEFAULT_TARGET_SCORE = 5;
 const DEFAULT_BOMB_PENALTY = 1;
 
 const TapCoinsGame = ({
@@ -81,23 +81,33 @@ const TapCoinsGame = ({
   const claimMutation = useMutation({
     mutationFn: async () => {
       const perfect = bombsHitRef.current === 0;
-      const { data, error } = await supabase.rpc("claim_package_daily_income", {
-        _user_product_id: userProductId,
-        _perfect: perfect,
-      } as any);
-      if (error) throw new Error(error.message);
-      return data as { reward_etb: number; days_credited: number; daily_etb: number; bonus_etb: number };
+      if (userProductId) {
+        const { data, error } = await supabase.rpc("claim_package_daily_income", {
+          _user_product_id: userProductId,
+          _perfect: perfect,
+        } as any);
+        if (error) throw new Error(error.message);
+        return data as { reward_etb: number; bonus_etb: number };
+      } else {
+        const { data, error } = await supabase.rpc("claim_all_packages_daily_income" as any, {
+          _perfect: perfect,
+        });
+        if (error) throw new Error(error.message);
+        return data as { reward_etb: number; bonus_etb: number };
+      }
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setReward(Number(data.reward_etb));
       setBonus(Number(data.bonus_etb || 0));
       queryClient.invalidateQueries({ queryKey: ["mainBalance", userId] });
       queryClient.invalidateQueries({ queryKey: ["availableBalance", userId] });
       queryClient.invalidateQueries({ queryKey: ["packageClaims", userId] });
+      queryClient.invalidateQueries({ queryKey: ["userProducts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["pendingDailyIncome", userId] });
       const total = Number(data.reward_etb) + Number(data.bonus_etb || 0);
       toast({
         title: "Reward credited!",
-        description: `ETB ${total.toFixed(2)} added (${data.days_credited} day${data.days_credited > 1 ? "s" : ""}${Number(data.bonus_etb || 0) > 0 ? ` + ETB ${Number(data.bonus_etb).toFixed(2)} perfect bonus` : ""}).`,
+        description: `ETB ${total.toFixed(2)} added to your balance.`,
       });
     },
     onError: (e: Error) => {
@@ -123,7 +133,6 @@ const TapCoinsGame = ({
     if (!open) reset();
   }, [open]);
 
-  // Game loop
   useEffect(() => {
     if (phase !== "playing") return;
     startRef.current = performance.now();
@@ -133,8 +142,7 @@ const TapCoinsGame = ({
       const remaining = Math.max(0, DURATION_MS - elapsed);
       setTimeLeft(remaining);
 
-      // Spawn coins ~every 220ms (faster as time goes on)
-      const spawnInterval = Math.max(140, 260 - elapsed / 100);
+      const spawnInterval = Math.max(180, 320 - elapsed / 100);
       if (t - lastSpawnRef.current > spawnInterval) {
         lastSpawnRef.current = t;
         const roll = Math.random();
@@ -153,7 +161,6 @@ const TapCoinsGame = ({
         ]);
       }
 
-      // Move coins
       setCoins((prev) =>
         prev
           .map((c) => ({ ...c, y: c.y + c.speed * 16, rotation: c.rotation + 4 }))
@@ -176,7 +183,13 @@ const TapCoinsGame = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // When player wins, claim
+  // Auto-win as soon as score reaches target
+  useEffect(() => {
+    if (phase === "playing" && score >= TARGET_SCORE) {
+      setPhase("won");
+    }
+  }, [score, phase, TARGET_SCORE]);
+
   useEffect(() => {
     if (phase === "won" && !claimMutation.isPending && reward === null) {
       claimMutation.mutate();
@@ -194,26 +207,23 @@ const TapCoinsGame = ({
   };
 
   const progressPct = Math.min(100, (score / TARGET_SCORE) * 100);
+  const title = productName ? `${productName} — Daily Game` : "Daily Game";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 overflow-hidden bg-gradient-to-b from-emerald-950 via-slate-950 to-slate-900 border-emerald-500/40">
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="flex items-center gap-2 text-emerald-300">
-            <Coins className="h-5 w-5" /> {productName} — Daily Game
+            <Coins className="h-5 w-5" /> {title}
           </DialogTitle>
           <DialogDescription className="text-emerald-100/70">
-            Catch {TARGET_SCORE} coins in {DURATION_MS / 1000}s. Avoid the bombs!
+            Catch {TARGET_SCORE} coins to claim your daily income. Avoid the bombs!
           </DialogDescription>
         </DialogHeader>
 
         {phase === "intro" && (
           <div className="px-4 pb-5 space-y-4">
             <div className="rounded-lg bg-emerald-900/30 border border-emerald-500/30 p-4 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-emerald-100/80">Pending days</span>
-                <span className="font-bold text-emerald-300">{pendingDays}</span>
-              </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-emerald-100/80">Reward on win</span>
                 <span className="font-bold text-emerald-300">
@@ -222,7 +232,7 @@ const TapCoinsGame = ({
               </div>
             </div>
             <div className="text-xs text-emerald-100/60 space-y-1">
-              <p>🪙 Gold coin = +1</p>
+              <p>🪙 Gold coin = +1 (catch {TARGET_SCORE} to win)</p>
               <p>✨ Sparkle coin = +3</p>
               <p>💣 Bomb = −1 (don't tap!)</p>
               <p className="text-yellow-300">🎁 No bombs hit = +1 to 5 ETB bonus!</p>
@@ -290,7 +300,7 @@ const TapCoinsGame = ({
               So close! You got {score}/{TARGET_SCORE}.
             </p>
             <p className="text-sm text-emerald-100/70">
-              No reward this time. Your {pendingDays} day{pendingDays > 1 ? "s" : ""} are still waiting — try again.
+              No reward this time. Your pending income is still waiting — try again.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>

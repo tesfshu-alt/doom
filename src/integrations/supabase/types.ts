@@ -618,6 +618,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_all_packages_daily_income: {
+        Args: { _perfect?: boolean }
+        Returns: Json
+      }
       claim_bonus_code: { Args: { _code: string }; Returns: number }
       claim_package_daily_income: {
         Args: { _perfect?: boolean; _user_product_id: string }
