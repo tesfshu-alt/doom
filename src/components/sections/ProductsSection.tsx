@@ -326,9 +326,9 @@ const ProductsSection = () => {
                     onClick={() => handleBuyProduct(product)} 
                     className="w-full" 
                     variant={isPremium ? "default" : "outline"}
-                    disabled={!canAfford || buyProductMutation.isPending}
+                    disabled={buyProductMutation.isPending}
                   >
-                    {buyProductMutation.isPending ? 'Processing...' : canAfford ? 'Buy Now' : 'Recharge First'}
+                    {buyProductMutation.isPending ? 'Processing...' : 'Buy Now'}
                   </Button>
                 )}
               </CardFooter>
