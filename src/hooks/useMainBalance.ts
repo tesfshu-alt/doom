@@ -31,5 +31,9 @@ export const useMainBalance = (userId: string | undefined) => {
       return mainBalance;
     },
     enabled: !!userId,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    refetchInterval: 15000,
+    staleTime: 0,
   });
 };
