@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import perimeraLogo from "@/assets/perimera-logo.png.asset.json";
 import AdminBankInfo from "./admin/AdminBankInfo";
 import AdminProducts from "./admin/AdminProducts";
 import AdminWithdrawals from "./admin/AdminWithdrawals";
@@ -389,7 +390,14 @@ const Admin = () => {
     <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
+          <div className="flex items-center gap-3">
+            <img
+              src={perimeraLogo.url}
+              alt="Perimera"
+              className="h-10 w-auto object-contain"
+            />
+            <h1 className="text-3xl font-bold">Admin Panel</h1>
+          </div>
           <Button variant="outline" onClick={() => navigate('/')}>
             Back to Dashboard
           </Button>

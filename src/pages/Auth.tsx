@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
+import perimeraLogo from "@/assets/perimera-logo.png.asset.json";
 
 const phoneSchema = z
   .string()
@@ -139,6 +140,13 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="space-y-2">
+          <div className="flex justify-center">
+            <img
+              src={perimeraLogo.url}
+              alt="Perimera"
+              className="h-16 w-auto object-contain"
+            />
+          </div>
           <CardTitle className="font-brand text-4xl font-black text-center bg-gradient-primary bg-clip-text text-transparent">
             Perimera
           </CardTitle>

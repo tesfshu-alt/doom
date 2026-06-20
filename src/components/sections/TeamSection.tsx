@@ -8,7 +8,7 @@ import { Copy, Users, Calendar, Gift, CheckCircle2, Clock, Share2 } from "lucide
 import { format } from "date-fns";
 import { Progress } from "@/components/ui/progress";
 import { maskPhoneNumber } from "@/lib/maskUtils";
-import brandLogo from "@/assets/doom-logo.png";
+import perimeraLogo from "@/assets/perimera-logo.png.asset.json";
 
 const TeamSection = () => {
   const { user } = useAuth();
@@ -183,7 +183,7 @@ const referralLink = profile
       <Card className="shadow-elevated bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-900 border-2 border-emerald-500/30">
         <CardContent className="p-4 space-y-4">
           <div className="flex items-center gap-3">
-            <img src={brandLogo} alt="Perimera" className="w-16 h-16 object-contain" />
+            <img src={perimeraLogo.url} alt="Perimera" className="w-16 h-16 object-contain" />
             <div className="text-white">
               <p className="font-brand text-lg font-bold">Your Dream is Here!</p>
               <p className="text-xs text-emerald-300">Share & Earn with PERIMERA</p>

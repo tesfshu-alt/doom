@@ -3,7 +3,7 @@ import { TrendingUp, Shield, Users, Globe, Building2, Cpu, Plane, Car, Smartphon
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
-import brandLogo from "@/assets/doom-logo.png";
+import perimeraLogo from "@/assets/perimera-logo.png.asset.json";
 
 const About = () => {
   const { data: exchangeRateSettings } = useQuery({
@@ -50,7 +50,7 @@ const About = () => {
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 text-white space-y-4">
             <div className="flex items-center gap-4">
-              <img src={brandLogo} alt="Perimera" className="w-20 h-20 object-contain" />
+              <img src={perimeraLogo.url} alt="Perimera" className="w-20 h-20 object-contain" />
               <div>
                 <h2 className="font-brand text-3xl font-black tracking-wide">Perimera</h2>
                 <p className="text-white/90">Technology Investment Company</p>
