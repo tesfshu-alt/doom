@@ -3,7 +3,7 @@ import { TrendingUp, Shield, Users, Globe, Building2, Cpu, Plane, Car, Smartphon
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
-import doomLogo from "@/assets/doom-logo.png";
+import brandLogo from "@/assets/doom-logo.png";
 
 const About = () => {
   const { data: exchangeRateSettings } = useQuery({
@@ -50,10 +50,10 @@ const About = () => {
         <Card className="shadow-elevated bg-gradient-primary">
           <CardContent className="p-6 text-white space-y-4">
             <div className="flex items-center gap-4">
-              <img src={doomLogo} alt="Dangote" className="w-20 h-20 object-contain" />
+              <img src={brandLogo} alt="Perimera" className="w-20 h-20 object-contain" />
               <div>
-                <h2 className="text-2xl font-bold">Dangote</h2>
-                <p className="text-white/90">Technology Investment Platform</p>
+                <h2 className="font-brand text-3xl font-black tracking-wide">Perimera</h2>
+                <p className="text-white/90">Technology Investment Company</p>
               </div>
             </div>
             <p className="text-white/90">
@@ -68,15 +68,15 @@ const About = () => {
               <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
-              <CardTitle className="text-lg">About Dangote</CardTitle>
+              <CardTitle className="text-lg">About Perimera</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
             <p>
-              <strong className="text-foreground">Dangote</strong> is a premier vendor and investor specializing in cutting-edge technologies. We invest in a diverse portfolio including electronics, automobiles, mobile devices, aircraft, and other innovative technologies.
+              <strong className="font-brand text-foreground">Perimera</strong> is a technology-based investment company. We invest in cutting-edge technologies including electronics, automobiles, mobile devices, aircraft, and other innovative tech sectors, giving everyday investors access to the growth of the global tech industry.
             </p>
             <p>
-              Our platform allows users to participate in technology investments and earn daily returns. User payments are processed using the current dollar exchange rate and credited directly in the country's local currency (ETB). We are not a forex exchanger - we are a technology investment platform.
+              Our platform allows users to participate in technology investments and earn daily returns. All payments are processed and credited in the local currency (ETB). We are not a forex exchanger — Perimera is a technology investment company.
             </p>
             <div className="flex items-center gap-6 py-4">
               <Car className="h-8 w-8 text-emerald-500" />
@@ -110,7 +110,7 @@ const About = () => {
         </Card>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Why Choose Dangote?</h3>
+          <h3 className="text-lg font-semibold">Why Choose Perimera?</h3>
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (

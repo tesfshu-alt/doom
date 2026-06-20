@@ -139,8 +139,8 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-3xl font-bold text-center bg-gradient-primary bg-clip-text text-transparent">
-            Dangote
+          <CardTitle className="font-brand text-4xl font-black text-center bg-gradient-primary bg-clip-text text-transparent">
+            Perimera
           </CardTitle>
           <CardDescription className="text-center">
             Start your investment journey today
