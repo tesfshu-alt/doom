@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useMainBalance } from "@/hooks/useMainBalance";
 import WelcomePopup from "@/components/WelcomePopup";
 
-import heroBg from "@/assets/hero-bg.jpg";
+import perimeraLogo from "@/assets/perimera-logo.png.asset.json";
 import { maskPhoneNumber } from "@/lib/maskUtils";
 
 // Section components
@@ -172,11 +172,19 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
         {showHero && (
-          <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }} />
-            <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/80 via-emerald-950/60 to-background" />
-            
+          <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-emerald-950 via-green-950 to-background">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(22,163,74,0.3),transparent_70%)]" />
+            </div>
+
             <div className="relative z-10 text-center px-4 space-y-6 animate-fade-in">
+              <div className="flex justify-center">
+                <img
+                  src={perimeraLogo.url}
+                  alt="Perimera"
+                  className="h-24 w-auto object-contain drop-shadow-[0_0_30px_rgba(22,163,74,0.5)]"
+                />
+              </div>
               <h1 className="font-brand text-5xl md:text-7xl font-black tracking-tight">
                 <span className="bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 bg-clip-text text-transparent">
                   PERIMERA
@@ -185,7 +193,7 @@ const Dashboard = () => {
               <p className="text-xl text-emerald-100 max-w-md mx-auto">
                 Are you ready to explore your future! The place is here
               </p>
-              <Button 
+              <Button
                 size="lg"
                 onClick={() => setShowHero(false)}
                 className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white border-0 shadow-lg shadow-emerald-500/25 animate-pulse"
