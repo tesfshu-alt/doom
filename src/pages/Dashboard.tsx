@@ -177,9 +177,9 @@ const Dashboard = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/80 via-emerald-950/60 to-background" />
             
             <div className="relative z-10 text-center px-4 space-y-6 animate-fade-in">
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight">
+              <h1 className="font-brand text-5xl md:text-7xl font-black tracking-tight">
                 <span className="bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 bg-clip-text text-transparent">
-                  DANGOTE
+                  PERIMERA
                 </span>
               </h1>
               <p className="text-xl text-emerald-100 max-w-md mx-auto">

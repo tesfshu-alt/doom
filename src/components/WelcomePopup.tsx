@@ -45,7 +45,7 @@ const WelcomePopup = ({ open, onClose }: WelcomePopupProps) => {
             <Megaphone className="h-6 w-6 text-primary" />
             <DialogTitle className="text-2xl font-bold">Announcements</DialogTitle>
           </div>
-          <p className="text-sm text-muted-foreground">Latest updates from Dangote</p>
+          <p className="text-sm text-muted-foreground">Latest updates from Perimera</p>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
